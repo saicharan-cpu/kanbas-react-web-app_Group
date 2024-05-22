@@ -3,10 +3,10 @@ export default function AssignmentEditor() {
       <div id="wd-assignments-editor">
         <label htmlFor="wd-name">Assignment Name</label>
         <input id="wd-name" value="A1 - ENV + HTML" /><br /><br />
-        <textarea id="wd-description">
-          The assignment is available online Submit a link to the landing page of the assignment. Deploy it on netlify
-          this assignment will give handson with basic html code.
-        </textarea>
+        <textarea id="wd-description" rows={10} cols={50}>
+        The assignment is available online. Submit a link to the landing page of the assignment. Deploy it on Netlify.
+        This assignment will give hands-on experience with basic HTML code.
+      </textarea>
         <br />
         <table>
           <tr>
