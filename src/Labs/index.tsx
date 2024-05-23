@@ -17,7 +17,6 @@ export default function Labs() {
         <Route path="Lab3" element={<Lab3 />} />
         <Route path="/Kanbas/*" element={<Kanbas />} />
       </Routes>
-      <Lab1 />
     </div>
 );}
 
