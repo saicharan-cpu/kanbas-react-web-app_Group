@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { FaEllipsisV } from "react-icons/fa";
 import "./index.css";
 
 export default function Dashboard() {
@@ -23,6 +24,9 @@ export default function Dashboard() {
           <div key={course.id} className="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
             <div className="card wd-dashboard-course">
               <img src={course.image} className="card-img-top" alt={course.title} />
+              <div className="card-img-overlay d-flex justify-content-end">
+                <FaEllipsisV className="text-white" style={{ cursor: 'pointer', fontSize: '15px' }} />
+              </div>
               <div className="card-body">
                 <Link className="wd-dashboard-course-link" to={course.link}>
                   {course.title}
