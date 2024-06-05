@@ -1,7 +1,9 @@
 import React from 'react';
-import { FaSearch, FaFilter, FaFileImport, FaFileExport, FaCog, FaCaretDown } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaFileImport, FaFileExport, FaCog, FaCaretDown,FaEdit } from 'react-icons/fa';
 import { HiClipboardCopy } from "react-icons/hi";
+import { LiaFileExportSolid } from "react-icons/lia";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
 
 export default function Grades() {
   return (
@@ -94,7 +96,20 @@ export default function Grades() {
                 <td className="text-danger">Han Bao</td>
               <td>100%</td>
               <td>100%</td>
-              <td><input type="text" className="form-control" defaultValue="88.03%" /></td>
+              <td className='col-sm-1half'>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className='input-cell'>
+                    <input 
+                        type="text"
+                        className="input-edit"
+                        defaultValue="88.03%"
+                    />
+                </div>
+                <div className="input-icon-container">
+                    <LiaFileExportSolid className="input-icon" />
+                </div>
+             </div>
+              </td>
               <td>98.99%</td>
             </tr>
             <tr className="bg-white">

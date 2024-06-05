@@ -1,0 +1,30 @@
+.input-cell {
+    display: flex;
+    align-items: center;
+    border: 2px solid red;  /* Outer red border */
+    padding: 1px;  /* Minimal padding to show red border around the inner grey border */
+    border-radius: 10px;
+}
+
+.input-edit {
+    flex-grow: 1;  /* Allows the input to take available space */
+    padding: 5px 8px;  /* Adequate padding for the input */
+    border: 1px solid rgb(197, 187, 187);  /* Inner grey border */
+    border-radius: 10px;  /* Rounded corners for the inner border */
+    outline: none;  /* Removes default focus outline */
+}
+
+.input-icon-container {
+    width: 30px;  /* Fixed width for the icon container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgb(220, 210, 210);  /* Normal grey border for the icon container */
+    border-radius: 5px;  /* Rounded corners for the icon container */
+    margin-left: 4px;  /* Space between the text field and the icon container */
+}
+
+.input-icon {
+    color: black;  /* Icon color */
+    cursor: pointer;  /* Indicates the icon is clickable */
+}
