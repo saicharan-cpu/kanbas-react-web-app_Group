@@ -96,7 +96,7 @@ export default function Grades() {
                 <td className="text-danger">Han Bao</td>
               <td>100%</td>
               <td>100%</td>
-              <td className='col-sm-1half'>
+              <td className="small-height">
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div className='input-cell'>
                     <input 
