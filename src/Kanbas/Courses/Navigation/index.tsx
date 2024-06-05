@@ -1,16 +1,27 @@
 import { Link } from "react-router-dom";
-
+import { AiOutlineDashboard } from "react-icons/ai";
+import { IoCalendarOutline } from "react-icons/io5";
+import { LiaBookSolid, LiaCogSolid } from "react-icons/lia";
+import { FaInbox, FaRegCircleUser } from "react-icons/fa6";
+import { BiLogoZoom } from "react-icons/bi";
+import "./index.css";
 export default function CoursesNavigation() {
-    console.log('called course navigation');
     return (
-        <ul id="wd-courses-navigation">
-            <li><Link id="wd-course-home-link"    to="Home">Home</Link></li>
-            <li><Link id="wd-course-modules-link" to="Modules">Modules</Link></li>
-            <li><Link id="wd-course-piazza-link"  to="Piazza">Piazza</Link></li>
-            <li><Link id="wd-course-zoom-link"    to="Zoom">Zoom</Link></li>
-            <li><Link id="wd-course-assignments-link" to="Assignments">Assignments</Link></li>
-            <li><Link id="wd-course-quizzes-link" to="Quizzes">Quizzes</Link></li>
-            <li><Link id="wd-course-grades-link"  to="Grades">Grades</Link></li>
-        </ul>
+        <div id="wd-courses-navigation" className="list-group fs-5 rounded-0">
+            <a id="wd-course-home-link" href="#/Kanbas/Courses/1234/Home"
+                className="list-group-item active border border-0"> Home </a>
+            <a id="wd-course-modules-link" href="#/Kanbas/Courses/1234/Modules"
+                className="list-group-item text-danger border border-0"> Modules </a>
+            <a id="wd-course-piazza-link" href="#/Kanbas/Courses/1234/Piazza"
+                className="list-group-item text-danger border border-0"> Piazza </a>
+            <a id="wd-course-zoom-link" href="#/Kanbas/Courses/1234/Zoom"
+                className="list-group-item text-danger border border-0"> Zoom </a>
+            <a id="wd-course-quizzes-link" href="#/Kanbas/Courses/1234/Assignments"
+                className="list-group-item text-danger border border-0"> Assignments </a>
+            <a id="wd-course-assignments-link" href="#/Kanbas/Courses/1234/Quizzes"
+                className="list-group-item text-danger border border-0"> Quizzes </a>
+            <a id="wd-course-grades-link" href="#/Kanbas/Courses/1234/Grades"
+                className="list-group-item text-danger border border-0"> Grades </a>
+        </div>
     );
 }

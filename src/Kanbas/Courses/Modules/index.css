@@ -1,0 +1,73 @@
+/* Ensure the main container for the modules takes the full width of the available space */
+.wd-modules {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;  /* Ensures padding and border are included in the element's total width and height */
+}
+
+.wd-module {
+    position: relative;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+}
+
+/* Adjust the wd-title to remove unnecessary margin at the bottom */
+.wd-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #bbaeae;  /* Light grey background color for week headers */
+    padding: 10px;
+    margin-bottom: 0;  /* Removes gap between title and first lesson */
+}
+
+/* Lesson list item styling */
+.wd-lesson {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px dotted #ccc;  /* Dotted line separator */
+    padding: 10px;
+    position: relative;
+}
+
+/* Specific styles for each lesson item */
+.wd-lesson::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;  /* Width of the green line */
+    background-color: green;
+}
+
+/* Additional styling */
+.list-group-item {
+    border-radius: 0;
+    padding-left: 10px;  /* Align padding with the green line */
+    display: flex;
+    align-items: center;
+    text-align: left;
+    justify-content: space-between;
+}
+
+/* Remove bottom border for the last lesson item */
+.wd-lesson:last-child {
+    border-bottom: none;
+}
+
+/* Adjustments for controlling visual elements in module control buttons */
+.ModuleControlButtons,
+.LessonControlButtons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;  /* Ensure buttons are pushed to the right */
+}
+
+/* Style adjustments for text alignment and module controls */
+.ModulesControls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;  /* Space between the top controls and modules */
+}

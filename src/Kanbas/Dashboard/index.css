@@ -1,0 +1,72 @@
+#wd-dashboard {
+    padding: 20px;
+}
+
+#wd-dashboard-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+#wd-dashboard-published {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+#wd-dashboard-courses {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+}
+
+.wd-dashboard-course {
+    max-width: 270px;
+    min-width: 250px;
+    margin: 0 auto;
+}
+
+.wd-dashboard-course .card-img-top {
+    height: 150px;
+    object-fit: cover;
+}
+
+.wd-dashboard-course .card-body {
+    text-align: center;
+}
+
+.wd-dashboard-course .wd-dashboard-course-link {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: navy;
+    text-decoration: none;
+}
+
+.wd-dashboard-course .wd-dashboard-course-title {
+    font-size: 1rem;
+    margin: 10px 0;
+}
+
+.wd-dashboard-course .btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+@media (max-width: 1200px) {
+    .col-xl-3 {
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
+    }
+}
+
+@media (max-width: 992px) {
+    .col-lg-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
