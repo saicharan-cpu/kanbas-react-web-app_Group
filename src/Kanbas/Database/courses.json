@@ -176,16 +176,5 @@
     "credits": 3,
     "description": "Focusing on the ethical dimensions of Islam, this course examines the moral teachings and wisdom found in the Quran and Hadith, with a special emphasis on the figure of Khidr. It explores concepts such as divine guidance, free will, moral reasoning, and the pursuit of righteousness. Students will engage in critical discussions on how these teachings apply to contemporary ethical dilemmas and personal spiritual growth.",
     "author": "655000a4ea7ead465908d1f5"
-  },
-  {
-    "_id": "RS118",
-    "name": "Understanding the Unseen: Islamic Esotericism",
-    "number": "ISL403",
-    "startDate": "2023-01-10",
-    "endDate": "2023-05-15",
-    "department": "Islamic Mysticism",
-    "credits": 4,
-    "description": "This advanced course explores the esoteric aspects of Islam, delving into topics such as the nature of the unseen world, spiritual symbolism in Islamic texts, and the role of mystical experiences. Drawing on the stories and teachings of Khidr, the course offers students a deeper understanding of the interplay between the material and spiritual realms, encouraging a reflective and introspective approach to religious study and practice.",
-    "author": "655000a4ea7ead465908d1f5"
   }
 ]
