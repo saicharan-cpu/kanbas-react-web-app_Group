@@ -187,35 +187,5 @@
     "credits": 4,
     "description": "This advanced course explores the esoteric aspects of Islam, delving into topics such as the nature of the unseen world, spiritual symbolism in Islamic texts, and the role of mystical experiences. Drawing on the stories and teachings of Khidr, the course offers students a deeper understanding of the interplay between the material and spiritual realms, encouraging a reflective and introspective approach to religious study and practice.",
     "author": "655000a4ea7ead465908d1f5"
-  },
-  {
-    "_id": "RS119",
-    "name": "Ancient Chinese Environmental Management",
-    "number": "ENV101",
-    "startDate": "2023-01-10",
-    "endDate": "2023-05-15",
-    "department": "Environmental Studies",
-    "credits": 3,
-    "description": "This course explores the principles and practices of environmental management in ancient China, with a focus on the legendary achievements of Yu the Great in flood control and irrigation. Students will examine ancient Chinese approaches to water management, agriculture, and land use, and their relevance to modern environmental challenges. The course also delves into the integration of these practices with traditional Chinese philosophies and governance."
-  },
-  {
-    "_id": "RS120",
-    "name": "Leadership Lessons from Chinese Mythology",
-    "number": "MGT201",
-    "startDate": "2023-01-10",
-    "endDate": "2023-05-15",
-    "department": "Management Studies",
-    "credits": 4,
-    "description": "Drawing on stories from Chinese mythology and history, this course examines the qualities and actions of effective leaders, using Yu the Great as a central figure. Students will explore themes of perseverance, vision, and ethical governance as demonstrated in Yu's legendary endeavors. The course also covers leadership lessons from other notable figures in Chinese mythology and their impact on the formation of Chinese cultural and political identity."
-  },
-  {
-    "_id": "RS121",
-    "name": "Hydraulic Engineering in Ancient Civilizations",
-    "number": "ENG303",
-    "startDate": "2023-01-10",
-    "endDate": "2023-05-15",
-    "department": "Engineering",
-    "credits": 4,
-    "description": "This engineering course offers an in-depth study of hydraulic projects in ancient civilizations, with a special focus on Yu the Great's flood control systems. Covering the design, construction, and impact of ancient dams, canals, and irrigation systems, the course provides insights into early engineering marvels. Comparative studies of hydraulic engineering in other ancient civilizations, such as Mesopotamia and the Indus Valley, are also included to provide a broader historical and technological context."
   }
 ]
