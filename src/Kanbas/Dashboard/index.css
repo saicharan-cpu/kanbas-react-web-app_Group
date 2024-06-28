@@ -15,13 +15,13 @@
 #wd-dashboard-courses {
     display: flex;
     flex-wrap: wrap;
-    justify-content: start;
+    justify-content: flex-start;
 }
 
 .wd-dashboard-course {
-    max-width: 270px;
-    min-width: 250px;
-    margin: 0 auto;
+    max-width: 300px; /* Adjust the max width to fit four courses per row */
+    min-width: 290px; /* Adjust the min width as well */
+    margin: 10px;
 }
 
 .wd-dashboard-course .card-img-top {
@@ -51,29 +51,39 @@
     border: none;
 }
 
-.wd-dashboard-course .three-dots {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
+.wd-dashboard-course .btn-warning {
+    background-color: #ffc107;
+    border: none;
+}
+
+.wd-dashboard-course .btn-danger {
+    background-color: #dc3545;
+    border: none;
 }
 
 @media (max-width: 1200px) {
     .col-xl-3 {
-        flex: 0 0 33.3333%;
-        max-width: 33.3333%;
+        flex: 0 0 25%;
+        max-width: 25%;
     }
 }
 
 @media (max-width: 992px) {
     .col-lg-4 {
-        flex: 0 0 50%;
-        max-width: 50%;
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
     }
 }
 
 @media (max-width: 768px) {
     .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 576px) {
+    .col-12 {
         flex: 0 0 100%;
         max-width: 100%;
     }
@@ -81,28 +91,27 @@
 
 .card {
     position: relative;
-    overflow: hidden; /* Ensures nothing spills outside the card */
-  }
-  
-  .card-img-top {
+    overflow: hidden;
+}
+
+.card-img-top {
     width: 100%;
-    height: auto; /* Adjust height as needed */
-  }
-  
-  .card-img-overlay {
+    height: auto;
+}
+
+.card-img-overlay {
     position: absolute;
     top: 0;
     right: 0;
-    padding: 10px; /* Adjust spacing */
-  }
-  
-  .wd-dashboard-course-link {
+    padding: 10px;
+}
+
+.wd-dashboard-course-link {
     font-weight: bold;
     color: navy;
     text-decoration: none;
-  }
-  
-  .wd-dashboard-course-link:hover {
+}
+
+.wd-dashboard-course-link:hover {
     text-decoration: underline;
-  }
-  
+}

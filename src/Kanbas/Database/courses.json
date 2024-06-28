@@ -168,13 +168,13 @@
   },
   {
     "_id": "RS117",
-    "name": "Ethical Wisdom in Islamic Teachings",
+    "name": "Ethical Wisdom in Islam",
     "number": "ISL202",
     "startDate": "2023-01-10",
     "endDate": "2023-05-15",
     "department": "Islamic Ethics",
     "credits": 3,
-    "description": "Focusing on the ethical dimensions of Islam, this course examines the moral teachings and wisdom found in the Quran and Hadith, with a special emphasis on the figure of Khidr. It explores concepts such as divine guidance, free will, moral reasoning, and the pursuit of righteousness. Students will engage in critical discussions on how these teachings apply to contemporary ethical dilemmas and personal spiritual growth.",
+    "description": "Focusing on the ethical dimensions of Islam",
     "author": "655000a4ea7ead465908d1f5"
   }
 ]
