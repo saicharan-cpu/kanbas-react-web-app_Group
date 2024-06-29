@@ -1,19 +1,27 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FaPlus, FaSearch, FaEllipsisV } from 'react-icons/fa';
-import { BsGripVertical } from 'react-icons/bs';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FaPlus, FaSearch } from 'react-icons/fa';
+import { BsGripVertical, BsPlus, BsTrash } from 'react-icons/bs';
 import { TfiWrite } from "react-icons/tfi";
 import { BiSolidDownArrow } from "react-icons/bi";
-import LessonControlButtons from '../Modules/LessonControlButtons';
-import { BsPlus } from 'react-icons/bs';
 import { IoEllipsisVertical } from 'react-icons/io5';
-import * as db from '../../Database';
+import LessonControlButtons from '../Modules/LessonControlButtons';
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteAssignment } from './reducer';
 import './index.css';
 
 export default function Assignments() {
   const { cid } = useParams<{ cid: string }>();
-  const assignments = db.assignments;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
   const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
+
+  const handleDelete = (assignmentId: string) => {
+    if (window.confirm('Are you sure you want to delete this assignment?')) {
+      dispatch(deleteAssignment(assignmentId));
+    }
+  };
 
   return (
     <div id="wd-assignments" className="container mt-4">
@@ -33,7 +41,11 @@ export default function Assignments() {
           <button id="wd-add-assignment-group" className="btn btn-outline-secondary me-2">
             <FaPlus className="me-1" /> Group
           </button>
-          <button id="wd-add-assignment" className="btn btn-danger">
+          <button
+            id="wd-add-assignment"
+            className="btn btn-danger"
+            onClick={() => navigate(`/Kanbas/Courses/${cid}/Assignments/new`)}
+          >
             <FaPlus className="me-1" /> Assignment
           </button>
         </div>
@@ -74,7 +86,12 @@ export default function Assignments() {
                   <span style={{ color: 'red' }}>Multiple Modules</span> | <b>Not Available until</b> {assignment.notAvailableUntil} | <b>Due</b> {assignment.dueDate} | 100 pts.
                 </span>
               </div>
-              <div><LessonControlButtons /></div>
+              <div className="d-flex align-items-center">
+                <LessonControlButtons />
+                <button className="btn btn-link text-danger" onClick={() => handleDelete(assignment._id)}>
+                  <BsTrash />
+                </button>
+              </div>
             </li>
           ))}
         </ul>
