@@ -1,6 +1,6 @@
 import React from 'react';
-import { Navigate, Route, Routes, useParams, useLocation } from "react-router-dom";
 import CoursesNavigation from "./Navigation";
+import { Navigate, Route, Routes, useParams, useLocation } from "react-router-dom";
 import Modules from "./Modules";
 import Assignments from "./Assignments";
 import AssignmentEditor from "./Assignments/Editor";
@@ -13,7 +13,6 @@ export default function Courses({ courses }: { courses: any[]; }) {
   const { cid } = useParams<{ cid: string }>();
   const course = courses.find((course) => course._id === cid);
   const { pathname } = useLocation();
-
   return (
     <div id="wd-courses">
       <h2 className='text-danger'>

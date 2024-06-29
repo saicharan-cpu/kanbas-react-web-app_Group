@@ -1,11 +1,29 @@
 /* Ensure the main container for the modules takes the full width of the available space */
-.wd-modules {
+.wd-modules-container {
     width: 100%;
     padding: 20px;
     box-sizing: border-box;  /* Ensures padding and border are included in the element's total width and height */
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.ModulesControls {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.wd-modules {
+    width: 100%; /* Adjust the width to extend to the majority of the screen */
+    display: flex;
+    flex-direction: column;
+    align-items: left;
 }
 
 .wd-module {
+    width: 100%;
     position: relative;
     margin-bottom: 20px;
     background: #f8f9fa;
@@ -25,7 +43,7 @@
 .wd-lesson {
     display: flex;
     align-items: center;
-    border-bottom: 1px dotted #ccc;  /* Dotted line separator */
+    border-bottom: 1px dotted #ccc;
     padding: 10px;
     position: relative;
 }
