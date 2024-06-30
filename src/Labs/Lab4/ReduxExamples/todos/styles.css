@@ -1,0 +1,53 @@
+.todo-container {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.form-item,
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 25%; /* Ensure each item does not exceed 1/4 of the page width */
+  box-sizing: border-box; /* Ensure padding and border are included in the width */
+}
+
+.button-group {
+  display: flex;
+  gap: 5px;
+}
+
+.todo-title {
+  flex-grow: 1;
+}
+
+.btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-add {
+  background-color: lightgreen;
+  color: black;
+}
+
+.btn-update {
+  background-color: lightyellow;
+  color: black;
+}
+
+.btn-delete {
+  background-color: lightcoral;
+  color: black;
+}
+
+.btn-edit {
+  background-color: lightblue;
+  color: black;
+}

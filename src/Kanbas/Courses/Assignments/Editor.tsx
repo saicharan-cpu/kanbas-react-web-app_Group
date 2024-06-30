@@ -29,8 +29,9 @@ export default function AssignmentEditor() {
     assignTo: "Everyone",
     dueDate: "",
     availableFrom: "",
-    availableUntil: "",
-    course: cid
+    notAvailableUntil: "2024-03-15",
+    course: cid,
+    availableUntil:""
   };
 
   const [assignment, setAssignment] = useState<any>(initialAssignment);
@@ -64,12 +65,19 @@ export default function AssignmentEditor() {
   };
 
   const handleSave = () => {
-    if (existingAssignment) {
-      dispatch(updateAssignment({ ...assignment, _id: aid }));
-    } else {
-      dispatch(addAssignment({ ...assignment, _id: new Date().getTime().toString() }));
-    }
-    navigate(`/Kanbas/Courses/${cid}/Assignments`);
+    if(!assignment.title)
+      {
+        alert("Assignment name cannot be empty");
+      }
+      else
+      {
+        if (existingAssignment) {
+          dispatch(updateAssignment({ ...assignment, _id: aid }));
+        } else {
+          dispatch(addAssignment({ ...assignment, _id: new Date().getTime().toString() }));
+        }
+        navigate(`/Kanbas/Courses/${cid}/Assignments`);
+      }
   };
 
   return (

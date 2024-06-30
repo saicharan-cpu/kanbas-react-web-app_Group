@@ -40,11 +40,14 @@ export default function Dashboard(
         className="form-control"
         onChange={(e) => setCourse({ ...course, description: e.target.value })}
       />
+      <br/>
       <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2>
       <hr />
       <div id="wd-dashboard-courses" className="row">
         {courses.map((course) => {
-          const img2 =  `/images/${course._id}.jpg`|| "/images/reactjs.jpg";
+         const img2 = course._id.length > 5 ? "/images/reactjs.jpg" : `/images/${course._id}.jpg`;
+          console.log("The course id is:"+course._id);
+          console.log("Image is:"+img2);
           return (
             <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" key={course._id}>
               <Link to={`/Kanbas/Courses/${course._id}/Home`} className="text-decoration-none">
