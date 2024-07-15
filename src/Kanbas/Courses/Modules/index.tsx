@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState,  useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import ModulesControls from "./ModulesControls";
 import ModuleControlButtons from "./ModuleControlButtons";
 import LessonControlButtons from "./LessonControlButtons";
 import { BsGripVertical } from 'react-icons/bs';
-import { addModule, editModule, updateModule, deleteModule } from "./reducer";
+import { addModule, editModule, updateModule, deleteModule, setModules } from "./reducer";
 import './index.css';
+import * as client from "./client";
 
 export default function Modules() {
   const { cid } = useParams<{ cid: string }>();
@@ -14,6 +15,26 @@ export default function Modules() {
   const dispatch = useDispatch();
   const courseModules = modules.filter((module: any) => module.course === cid);
   const [moduleName, setModuleName] = useState("");
+  const fetchModules = async () => {
+    const modules = await client.findModulesForCourse(cid as string);
+    dispatch(setModules(modules));
+  };
+  useEffect(() => {
+    fetchModules();
+  }, []);
+  const createModule = async (module: any) => {
+    const newModule = await client.createModule(cid as string, module);
+    dispatch(addModule(newModule));
+  };
+  const removeModule = async (moduleId: string) => {
+    await client.deleteModule(moduleId);
+    dispatch(deleteModule(moduleId));
+  };
+  const saveModule = async (module: any) => {
+    const status = await client.updateModule(module);
+    dispatch(updateModule(module));
+  };
+
 
   return (
     <div className="wd-modules-container">
@@ -21,7 +42,7 @@ export default function Modules() {
         moduleName={moduleName}
         setModuleName={setModuleName}
         addModule={() => {
-          dispatch(addModule({ _id: new Date().getTime().toString(), name: moduleName, course: cid, lessons: [] }));
+          createModule({ name: moduleName, course: cid });
           setModuleName("");
         }}
       />
@@ -38,10 +59,10 @@ export default function Modules() {
                 {module.editing && (
                   <input
                     className="form-control w-50 d-inline-block"
-                    onChange={(e) => dispatch(updateModule({ ...module, name: e.target.value }))}
+                    onChange={(e) => saveModule({ ...module, name: e.target.value })}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        dispatch(updateModule({ ...module, editing: false }));
+                        saveModule({ ...module, editing: false });;
                       }
                     }}
                     value={module.name}
@@ -49,7 +70,7 @@ export default function Modules() {
                 )}
                 <ModuleControlButtons
                   moduleId={module._id}
-                  deleteModule={() => dispatch(deleteModule(module._id))}
+                  deleteModule={() => {removeModule(module._id)}}
                   editModule={() => dispatch(editModule(module._id))}
                 />
               </div>
