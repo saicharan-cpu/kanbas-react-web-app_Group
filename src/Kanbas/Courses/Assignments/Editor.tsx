@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { addAssignment, updateAssignment } from './reducer';
+import { addAssignment, updateAssignment, setAssignment } from './reducer';
+import * as assignmentsClient from './client';
 import "./index.css";
 
 export default function AssignmentEditor() {
@@ -64,20 +65,23 @@ export default function AssignmentEditor() {
     }
   };
 
-  const handleSave = () => {
-    if(!assignment.title)
-      {
-        alert("Assignment name cannot be empty");
+  const handleSave = async () => {
+    if (!assignment.title) {
+      alert("Assignment name cannot be empty");
+      return;
+    }
+    try {
+      if (existingAssignment) {
+        await assignmentsClient.updateAssignment({ ...assignment, _id: aid });
+        dispatch(updateAssignment({ ...assignment, _id: aid }));
+      } else {
+        const newAssignment = await assignmentsClient.createAssignment({ ...assignment, course: cid });
+        dispatch(addAssignment(newAssignment));
       }
-      else
-      {
-        if (existingAssignment) {
-          dispatch(updateAssignment({ ...assignment, _id: aid }));
-        } else {
-          dispatch(addAssignment({ ...assignment, _id: new Date().getTime().toString() }));
-        }
-        navigate(`/Kanbas/Courses/${cid}/Assignments`);
-      }
+      navigate(`/Kanbas/Courses/${cid}/Assignments`);
+    } catch (error) {
+      console.error("Failed to save assignment", error);
+    }
   };
 
   return (
