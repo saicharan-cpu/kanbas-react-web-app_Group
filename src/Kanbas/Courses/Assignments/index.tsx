@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import { BsGripVertical, BsPlus, BsTrash } from 'react-icons/bs';
@@ -7,7 +7,8 @@ import { BiSolidDownArrow } from "react-icons/bi";
 import { IoEllipsisVertical } from 'react-icons/io5';
 import LessonControlButtons from '../Modules/LessonControlButtons';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteAssignment } from './reducer';
+import { deleteAssignment, setAssignment } from './reducer';
+import * as assignmentsClient from './client';
 import './index.css';
 
 export default function Assignments() {
@@ -16,9 +17,17 @@ export default function Assignments() {
   const dispatch = useDispatch();
   const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
   const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
+  const fetchAssignments = async () => {
+    const assignments = await assignmentsClient.fetchAssignmentForCourse(cid as string);
+    dispatch(setAssignment(assignments));
+  };
+  useEffect(() => {
+    fetchAssignments();
+  }, [dispatch]);
 
-  const handleDelete = (assignmentId: string) => {
+  const handleDelete = async (assignmentId: string) => {
     if (window.confirm('Are you sure you want to delete this assignment?')) {
+      await assignmentsClient.deleteAssignment(assignmentId);
       dispatch(deleteAssignment(assignmentId));
     }
   };
