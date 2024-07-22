@@ -7,8 +7,8 @@ export const fetchQuizzes = async () => {
   return response.data;
 };
 
-export const fetchQuizForCourse = async (quizId: string) => {
-  const response = await axios.get(`${QUIZZES_API}/${quizId}`);
+export const fetchQuizForCourse = async (courseId: string) => {
+  const response = await axios.get(`${QUIZZES_API}/${courseId}`);
   return response.data;
 };
 
