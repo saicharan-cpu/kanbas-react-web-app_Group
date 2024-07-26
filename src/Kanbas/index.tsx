@@ -7,6 +7,7 @@ import * as client from "./Courses/client";
 import store from "./store";
 import { Provider } from "react-redux";
 import React, { useEffect, useState } from "react";
+import PeopleTable from "./Courses/People/Table";
 
 export default function Kanbas() {
   const [courses, setCourses] = useState<any[]>([]);
@@ -68,6 +69,7 @@ export default function Kanbas() {
           } />
           <Route path="Courses/:cid/*" element={
             <Courses courses={courses} />} />
+          <Route path="People" element={<PeopleTable />} />
         </Routes>
       </div>
     </div>
