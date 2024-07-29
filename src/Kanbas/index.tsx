@@ -13,8 +13,15 @@ import ProtectedRoute from "./ProtectedRoute";
 export default function Kanbas() {
   const [courses, setCourses] = useState<any[]>([]);
   const fetchCourses = async () => {
-    const courses = await client.fetchAllCourses();
+    try{
+      const courses = await client.fetchAllCourses();
+    console.log("fetching courses in index: "+courses);
     setCourses(courses);
+    }
+    catch(error:any)
+    {
+      console.error("Error adding new course:", error);
+    }
   };
   useEffect(() => {
     fetchCourses();
