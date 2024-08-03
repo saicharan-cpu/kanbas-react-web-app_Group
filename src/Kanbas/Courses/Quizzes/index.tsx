@@ -16,11 +16,14 @@ export default function Quizzes() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const quizzes = useSelector((state: any) => state.quizzesReducer.quizzes);
-  const courseQuizzes = quizzes.filter((quiz: any) => quiz.course === cid);
+  const courseQuizzes = quizzes.filter((quiz: any) => quiz.courseId === cid);
+
   const fetchQuizzes = async () => {
-    const quizzes = await quizClient.fetchQuizForCourse(cid as string);
+    const quizzes = await quizClient.fetchQuizzesForCourse(cid as string);
     dispatch(setQuiz(quizzes));
+    console.log("Fetched Quizzes in web app are:" + JSON.stringify(quizzes));
   };
+
   useEffect(() => {
     fetchQuizzes();
   }, [dispatch]);
@@ -32,7 +35,11 @@ export default function Quizzes() {
     }
   };
 
-  return (    
+  const handleQuizClick = (quizId: string) => {
+    navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
+  };
+
+  return (
     <div id="wd-quiz" className="container mt-4">
       <div className="row mb-3 align-items-center">
         <div className="col-md-6 mb-2 mb-md-0">
@@ -47,9 +54,6 @@ export default function Quizzes() {
           </div>
         </div>
         <div className="col-md-6 text-md-end">
-          {/* <button id="wd-add-assignment-group" className="btn btn-outline-secondary me-2">
-            <FaPlus className="me-1" /> Group
-          </button> */}
           <button
             id="wd-add-quiz"
             className="btn btn-danger"
@@ -59,7 +63,7 @@ export default function Quizzes() {
           </button>
         </div>
       </div>
-      <hr/>
+      <hr />
       <div className="assignment-section">
         <div className="assignment-title d-flex align-items-center p-3 bg-light">
           <div>
@@ -69,9 +73,6 @@ export default function Quizzes() {
           <div className="flex-grow-1">
             <b>  Assignment Quizzes </b>
           </div>
-          {/* <div className="d-flex align-items-center">
-            <span className="badge bg-secondary ms-2">40% of Total</span>
-          </div> */}
           <div>
             <BsPlus className="fs-4" />
             <IoEllipsisVertical className="fs-4" />
@@ -79,27 +80,27 @@ export default function Quizzes() {
         </div>
         <ul id="wd-assignment-list" className="list-unstyled">
           {courseQuizzes.map((quiz: any) => (
-            <li key={quiz._id} className="wd-assignment-list-item d-flex align-items-center">
+            <li key={quiz._id} className="wd-assignment-list-item d-flex align-items-center" onClick={() => handleQuizClick(quiz._id)}>
               <div><BsGripVertical className="me-2 fs-3" /></div>
               <div className="assignment-icon me-2">
                 <TfiWrite />
               </div>
               <div className="assignment-details flex-grow-1">
                 <Link
-                  to={`/Kanbas/Courses/${cid}/Assignments/${quiz._id}`}
+                  to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}`}
                   className="wd-assignment-link d-block mb-1"
                   style={{ color: 'black', textDecoration: 'none' }}
                 >
                   <b>{quiz.title}</b>
                 </Link>
                 <span className="details">
-                  <span style={{ color: 'red' }}>Multiple Modules</span> | <b>Not Available until</b> {quiz.notAvailableUntil} |
-                  <b>Due</b> {quiz.dueDate} | 100 pts.
+                  <span style={{ color: 'red' }}>Multiple Modules</span> | <b>Not Available until</b> {quiz.availabilityDate} |
+                  <b>Due</b> {quiz.dueDate} | {quiz.points} pts.
                 </span>
               </div>
               <div className="d-flex align-items-center">
                 <LessonControlButtons />
-                <button className="btn btn-link text-danger" onClick={() => handleDelete(quiz._id)}>
+                <button className="btn btn-link text-danger" onClick={(e) => { e.stopPropagation(); handleDelete(quiz._id); }}>
                   <BsTrash />
                 </button>
               </div>

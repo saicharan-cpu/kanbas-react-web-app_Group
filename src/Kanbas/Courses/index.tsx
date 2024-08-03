@@ -5,7 +5,7 @@ import Modules from "./Modules";
 import Assignments from "./Assignments";
 import AssignmentEditor from "./Assignments/Editor";
 import Quizzes from './Quizzes';
-import QuizzesEditor from './Quizzes/Editor';
+import QuizDetailsScreen from './Quizzes/QuizDetails';
 import Home from "./Home";
 import { FaAlignJustify } from 'react-icons/fa';
 import Grades from './Grades/grades';
@@ -34,7 +34,7 @@ export default function Courses({ courses }: { courses: any[]; }) {
             <Route path="Assignments" element={<Assignments />} />
             <Route path="Assignments/:aid" element={<AssignmentEditor />} />
             <Route path="Quizzes" element={<Quizzes />} />
-            <Route path="Quizzes/:qid" element={<QuizzesEditor />} />
+            <Route path="Quizzes/:quizId" element={<QuizDetailsScreen />} />
             <Route path="Grades" element={<Grades />} />
             <Route path="People" element={<PeopleTable />} />
             <Route path="People/:uid" element={<PeopleTable />} />
