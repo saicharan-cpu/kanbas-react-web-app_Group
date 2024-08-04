@@ -31,13 +31,11 @@ const QuizDetailsScreen = () => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const user = useSelector((state: any) => state.accountReducer.currentUser);
   const navigate = useNavigate();
-console.log("The quiz id is:"+quizId);
+
   useEffect(() => {
     const getQuiz = async () => {
       if (quizId) {
-        console.log("calling the fetch quiz api");
         const quizData = await fetchQuiz(quizId);
-        console.log("fetched data for quiz:"+JSON.stringify(quizData));
         setQuiz(quizData);
       }
     };
@@ -49,9 +47,9 @@ console.log("The quiz id is:"+quizId);
   return (
     <div>
       <h1>{quiz.title}</h1>
-      <button onClick={() => navigate(`/quizzes/${quiz._id}/preview`)}>Preview</button>
+      <button onClick={() => navigate(`/Kanbas/Courses/${quiz.courseId}/Quizzes/${quiz._id}/preview`)}>Preview</button>
       {user?.role === "FACULTY" && (
-        <button onClick={() => navigate(`/quizzes/${quiz._id}/edit`)}>Edit</button>
+        <button onClick={() => navigate(`/Kanbas/Courses/${quiz.courseId}/Quizzes/${quiz._id}/edit`)}>Edit</button>
       )}
       <div>
         <p><strong>Quiz Type:</strong> {quiz.quizType}</p>
@@ -71,10 +69,10 @@ console.log("The quiz id is:"+quizId);
         <p><strong>Until date:</strong> {new Date(quiz.untilDate).toLocaleString()}</p>
       </div>
       {user?.role === "STUDENT" && (
-        <button onClick={() => navigate(`/quizzes/${quiz._id}/start`)}>Start Quiz</button>
+        <button onClick={() => navigate(`/Kanbas/Courses/${quiz.courseId}/Quizzes/${quiz._id}/start`)}>Start Quiz</button>
       )}
     </div>
   );
-}
+};
 
 export default QuizDetailsScreen;

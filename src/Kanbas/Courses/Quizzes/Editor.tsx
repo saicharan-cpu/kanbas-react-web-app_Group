@@ -1,192 +1,195 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from "react-redux";
-import { addQuiz, updateQuiz, setQuiz } from './reducer';
-import * as quizzesClient from './client';
-import "./index.css";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { fetchQuiz, updateQuiz } from "./client";
+import QuizQuestionsEditor from "../Questions/Editor";
+import './QuizDetailsEditor.css';
 
-export default function QuizzesEditor() {
-  const { cid, qid } = useParams<{ cid: string; qid: string }>();
-  const dispatch = useDispatch();
+interface Quiz {
+  _id: string;
+  title: string;
+  description: string;
+  courseId: string;
+  points: number;
+  quizType: string;
+  timeLimit: number;
+  assignmentGroup: string;
+  isShuffled: boolean;
+  ismultipleAttempts: boolean;
+  howManyAttempts: number;
+  showCorrectAnswers: string;
+  accessCode: string;
+  onQuestionAtaTime: boolean;
+  webcamRequired: boolean;
+  lockQuestionsAfterAnswering: boolean;
+  dueDate: string;
+  availabilityDate: string;
+  untilDate: string;
+}
+
+const QuizDetailsEditor = () => {
+  const { quizId } = useParams<{ quizId: string }>();
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [activeTab, setActiveTab] = useState("details");
   const navigate = useNavigate();
-  const quizzes = useSelector((state: any) => state.quizzesReducer.quizzes);
-  const existingQuiz = quizzes.find((quiz: any) => quiz._id === qid);
-
-  const initialQuiz = {
-    _id: "",
-    title: "",
-    description: "",
-    points: 100,
-    assignmentGroup: "QUIZZES",
-    displayGradeAs: "PERCENTAGE",
-    submissionType: "ONLINE",
-    onlineEntryOptions: {
-      textEntry: false,
-      websiteURL: false,
-      mediaRecordings: false,
-      studentAnnotation: false,
-      fileUpload: false
-    },
-    assignTo: "Everyone",
-    dueDate: "",
-    availableFrom: "",
-    notAvailableUntil: "2024-03-15",
-    course: cid,
-    availableUntil:""
-  };
-
-  const [quiz, setQuiz] = useState<any>(initialQuiz);
 
   useEffect(() => {
-    if (existingQuiz) {
-      setQuiz({
-        ...initialQuiz,
-        ...existingQuiz,
-        onlineEntryOptions: {
-          ...initialQuiz.onlineEntryOptions,
-          ...existingQuiz.onlineEntryOptions,
-        }
-      });
-    }
-  }, [existingQuiz]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { id, value, type } = e.target;
-    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
-      setQuiz({
-        ...quiz,
-        onlineEntryOptions: {
-          ...quiz.onlineEntryOptions,
-          [id]: e.target.checked
-        }
-      });
-    } else {
-      setQuiz({ ...quiz, [id]: value });
-    }
-  };
+    const getQuiz = async () => {
+      if (quizId) {
+        const quizData = await fetchQuiz(quizId);
+        setQuiz(quizData);
+      }
+    };
+    getQuiz();
+  }, [quizId]);
 
   const handleSave = async () => {
-    if (!quiz.title) {
-      alert("Quiz name cannot be empty");
-      return;
-    }
-    try {
-      if (existingQuiz) {
-        await quizzesClient.updateQuiz({ ...quiz, _id: qid });
-        dispatch(updateQuiz({ ...quiz, _id: qid }));
-      } else {
-        const newQuiz = await quizzesClient.createQuiz({ ...quiz, course: cid });
-        dispatch(addQuiz(newQuiz));
-      }
-      navigate(`/Kanbas/Courses/${cid}/Quizzes`);
-    } catch (error) {
-      console.error("Failed to save quiz", error);
+    if (quiz) {
+      await updateQuiz(quiz._id, quiz);
+      navigate(`/Kanbas/Courses/${quiz.courseId}/Quizzes/${quiz._id}`);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    let val: any = value;
+
+    if (type === "number") {
+      val = parseInt(value, 10);
+    } else if (type === "checkbox") {
+      val = (e.target as HTMLInputElement).checked;
+    } else if (name === "isShuffled" || name === "ismultipleAttempts" || name === "onQuestionAtaTime" || name === "webcamRequired" || name === "lockQuestionsAfterAnswering") {
+      val = value === "true";
+    }
+
+    setQuiz(prevQuiz => ({
+      ...prevQuiz!,
+      [name]: val,
+    } as Quiz));
+  };
+
+  if (!quiz) return <div>Loading...</div>;
+
   return (
-    <div id="wd-assignments-editor" className="container mt-4">
-      <div className="mb-3">
-        <label htmlFor="title" className="form-label">Quiz Name</label>
-        <input id="title" className="form-control" value={quiz.title} onChange={handleInputChange} />
+    <div className="quiz-details-editor">
+      <div className="tabs">
+        <button className={activeTab === "details" ? "active" : ""} onClick={() => setActiveTab("details")}>Details</button>
+        <button className={activeTab === "questions" ? "active" : ""} onClick={() => setActiveTab("questions")}>Questions</button>
       </div>
-      <div className="mb-3">
-        <label htmlFor="description" className="form-label">Quiz Description</label>
-        <textarea id="description" className="form-control" rows={5} value={quiz.description} onChange={handleInputChange} />
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-3 text-md-end d-flex align-items-center justify-content-end">
-          <label htmlFor="points" className="form-label">Points</label>
-        </div>
-        <div className="col-md-9">
-          <input id="points" className="form-control" type="number" value={quiz.points} onChange={handleInputChange} />
-        </div>
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-3 text-md-end d-flex align-items-center justify-content-end">
-          <label htmlFor="assignmentGroup" className="form-label">Assignment Group</label>
-        </div>
-        <div className="col-md-9">
-          <select id="assignmentGroup" className="form-select" value={quiz.assignmentGroup} onChange={handleInputChange}>
-            <option value="PROJECTS">Projects</option>
-            <option value="ASSIGNMENTS">Assignments</option>
-          </select>
-        </div>
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-3 text-md-end d-flex align-items-center justify-content-end">
-          <label htmlFor="displayGradeAs" className="form-label">Display Grade as:</label>
-        </div>
-        <div className="col-md-9">
-          <select id="displayGradeAs" className="form-select" value={quiz.displayGradeAs} onChange={handleInputChange}>
-            <option value="POINTS">Points</option>
-            <option value="PERCENTAGE">Percentage</option>
-          </select>
-        </div>
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-3 text-md-end d-flex align-items-center justify-content-end">
-          <label htmlFor="submissionType" className="form-label">Submission Type:</label>
-        </div>
-        <div className="col-md-9">
-          <div className="card p-3">
-            <select id="submissionType" className="form-select mb-3" value={quiz.submissionType} onChange={handleInputChange}>
-              <option value="ONLINE">Online</option>
-              <option value="PRESENTATION">Presentation</option>
+      {activeTab === "details" && (
+        <div className="details-form">
+          <h1>Quiz Details Editor</h1>
+          <label>
+            Title:
+            <input type="text" name="title" value={quiz.title} onChange={handleChange} />
+          </label>
+          <label>
+            Description:
+            <textarea name="description" value={quiz.description} onChange={handleChange} />
+          </label>
+          <label>
+            Quiz Type:
+            <select name="quizType" value={quiz.quizType} onChange={handleChange}>
+              <option value="Graded Quiz">Graded Quiz</option>
+              <option value="Practice Quiz">Practice Quiz</option>
+              <option value="Graded Survey">Graded Survey</option>
+              <option value="Ungraded Survey">Ungraded Survey</option>
             </select>
-            <div className="form-label"><b>Online Entry Options:</b></div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" id="textEntry" checked={quiz.onlineEntryOptions.textEntry} onChange={handleInputChange} />
-              <label className="form-check-label" htmlFor="textEntry">Text Entry</label>
-            </div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" id="websiteURL" checked={quiz.onlineEntryOptions.websiteURL} onChange={handleInputChange} />
-              <label className="form-check-label" htmlFor="websiteURL">Website URL</label>
-            </div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" id="mediaRecordings" checked={quiz.onlineEntryOptions.mediaRecordings} onChange={handleInputChange} />
-              <label className="form-check-label" htmlFor="mediaRecordings">Media Recordings</label>
-            </div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" id="studentAnnotation" checked={quiz.onlineEntryOptions.studentAnnotation} onChange={handleInputChange} />
-              <label className="form-check-label" htmlFor="studentAnnotation">Student Annotation</label>
-            </div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" id="fileUpload" checked={quiz.onlineEntryOptions.fileUpload} onChange={handleInputChange} />
-              <label className="form-check-label" htmlFor="fileUpload">File Uploads</label>
-            </div>
+          </label>
+          <label>
+            Points:
+            <input type="number" name="points" value={quiz.points} onChange={handleChange} />
+          </label>
+          <label>
+            Assignment Group:
+            <select name="assignmentGroup" value={quiz.assignmentGroup} onChange={handleChange}>
+              <option value="Quizzes">Quizzes</option>
+              <option value="Exams">Exams</option>
+              <option value="Assignments">Assignments</option>
+              <option value="Project">Project</option>
+            </select>
+          </label>
+          <label>
+            Shuffle Answers:
+            <select name="isShuffled" value={String(quiz.isShuffled)} onChange={handleChange}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>
+            Time Limit:
+            <input type="number" name="timeLimit" value={quiz.timeLimit} onChange={handleChange} />
+          </label>
+          <label>
+            Multiple Attempts:
+            <select name="ismultipleAttempts" value={String(quiz.ismultipleAttempts)} onChange={handleChange}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          {quiz.ismultipleAttempts && (
+            <label>
+              How Many Attempts:
+              <input type="number" name="howManyAttempts" value={quiz.howManyAttempts} onChange={handleChange} />
+            </label>
+          )}
+          <label>
+            Show Correct Answers:
+            <select name="showCorrectAnswers" value={quiz.showCorrectAnswers} onChange={handleChange}>
+              <option value="Immediately">Immediately</option>
+              <option value="After all attempts are graded">After all attempts are graded</option>
+              <option value="After due date">After due date</option>
+            </select>
+          </label>
+          <label>
+            Access Code:
+            <input type="text" name="accessCode" value={quiz.accessCode} onChange={handleChange} />
+          </label>
+          <label>
+            One Question at a Time:
+            <select name="onQuestionAtaTime" value={String(quiz.onQuestionAtaTime)} onChange={handleChange}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>
+            Webcam Required:
+            <select name="webcamRequired" value={String(quiz.webcamRequired)} onChange={handleChange}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>
+            Lock Questions After Answering:
+            <select name="lockQuestionsAfterAnswering" value={String(quiz.lockQuestionsAfterAnswering)} onChange={handleChange}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </label>
+          <label>
+            Due date:
+            <input type="datetime-local" name="dueDate" value={quiz.dueDate} onChange={handleChange} />
+          </label>
+          <label>
+            Available date:
+            <input type="datetime-local" name="availabilityDate" value={quiz.availabilityDate} onChange={handleChange} />
+          </label>
+          <label>
+            Until date:
+            <input type="datetime-local" name="untilDate" value={quiz.untilDate} onChange={handleChange} />
+          </label>
+          <div className="buttons">
+            <button onClick={handleSave}>Save</button>
+            <button onClick={() => navigate(`/Kanbas/Courses/${quiz.courseId}/Quizzes/${quiz._id}`)}>Cancel</button>
           </div>
         </div>
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-3 text-md-end d-flex align-items-center justify-content-end">
-          <label htmlFor="assignTo" className="form-label">Assign:</label>
+      )}
+      {activeTab === "questions" && (
+        <div>
+          <QuizQuestionsEditor />
         </div>
-        <div className="col-md-9">
-          <div className="card p-3">
-            <label htmlFor="assignTo" className="form-label"><b>Assign to</b></label>
-            <input id="assignTo" className="form-control mb-2" value={quiz.assignTo} onChange={handleInputChange} />
-            <label htmlFor="dueDate" className="form-label"><b>Due</b></label>
-            <input type="date" id="dueDate" className="form-control mb-2" value={quiz.dueDate} onChange={handleInputChange} />
-            <div className="row">
-              <div className="col-md-6">
-                <label htmlFor="availableFrom" className="form-label"><b>Available from</b></label>
-                <input type="date" id="availableFrom" className="form-control mb-2" value={quiz.availableFrom} onChange={handleInputChange} />
-              </div>
-              <div className="col-md-6">
-                <label htmlFor="availableUntil" className="form-label"><b>Until</b></label>
-                <input type="date" id="availableUntil" className="form-control mb-2" value={quiz.availableUntil} onChange={handleInputChange} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="row mb-3 justify-content-center">
-        <div className="col-md-9 text-end">
-          <Link to={`/Kanbas/Courses/${cid}/Quizzes`} className="btn btn-secondary me-2">Cancel</Link>
-          <button onClick={handleSave} className="btn btn-primary">Save</button>
-        </div>
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default QuizDetailsEditor;

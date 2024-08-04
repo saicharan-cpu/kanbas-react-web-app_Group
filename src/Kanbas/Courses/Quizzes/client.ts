@@ -17,8 +17,8 @@ export const createQuiz = async (quiz: any) => {
   return response.data;
 };
 
-export const updateQuiz = async (quiz: any) => {
-  const response = await axios.put(`${REMOTE_SERVER}/api/quizzes/${quiz._id}`, quiz);
+export const updateQuiz = async (quizId: string, quiz: any) => {
+  const response = await axios.put(`${REMOTE_SERVER}/api/quizzes/${quizId}`, quiz);
   return response.data;
 };
 
