@@ -1,43 +1,33 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  quizzes: [],
+  quizzes: [] as any[],
 };
 
-const quizzesSlice = createSlice({
+const quizzesSlicer = createSlice({
   name: "quizzes",
   initialState,
   reducers: {
-    setQuiz: (state, action) => {
+    setQuizzes: (state, action) => {
       state.quizzes = action.payload;
     },
-    addQuiz: (state, { payload: quiz }) => {
-      const newQuiz: any = {
-        _id: new Date().getTime().toString(),
-        title: quiz.title,
-        course: quiz.course,
-        notAvailableUntil: quiz.notAvailableUntil,
-        dueDate: quiz.dueDate,
-      };
-      state.quizzes = [...state.quizzes, newQuiz] as any;
+    addQuizzes: (state, { payload: quiz }) => {
+      state.quizzes.push(quiz);
     },
-    deleteQuiz: (state, { payload: quizId }) => {
+    deleteQuizzes: (state, { payload: quizId }) => {
       state.quizzes = state.quizzes.filter(
-        (a: any) => a._id !== quizId
+        (q) => q.id !== quizId
       );
     },
-    updateQuiz: (state, { payload: quiz }) => {
-      state.quizzes = state.quizzes.map((a: any) =>
-        a._id === quiz._id ? quiz : a
-      ) as any;
-    },
-    editQuiz: (state, { payload: quizId }) => {
-      state.quizzes = state.quizzes.map((a: any) =>
-        a._id === quizId ? { ...a, editing: true } : a
-      ) as any;
+    updateQuizzes: (state, { payload: updatedQuizzes }) => {
+      const index = state.quizzes.findIndex((q) => q.id === updatedQuizzes.id);
+      if (index !== -1) {
+        state.quizzes[index] = updatedQuizzes;
+      }
     },
   },
 });
 
-export const { addQuiz, deleteQuiz, updateQuiz, editQuiz, setQuiz } = quizzesSlice.actions;
-export default quizzesSlice.reducer;
+export const { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } =
+  quizzesSlicer.actions;
+export default quizzesSlicer.reducer;
