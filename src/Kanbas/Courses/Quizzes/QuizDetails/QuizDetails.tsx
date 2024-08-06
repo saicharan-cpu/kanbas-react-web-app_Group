@@ -10,6 +10,30 @@ import { format } from 'date-fns'
 import { AiOutlineStop } from 'react-icons/ai'
 import { FaPlus, FaArrowLeft } from 'react-icons/fa6'
 import { findAllQuestionsByQuizId } from '../QuestionClient'
+import * as quizClient from '../client';
+import { addAnswer, updateAnswer } from '../AnswerReducer';
+
+interface Question {
+  title: string;
+  _id: string;
+  text: string;
+  points: number;
+  type: 'multiple-choice' | 'fill-in-the-blank' | 'true-false';
+  options?: string[];
+  answers: string[];
+}
+
+interface Answers {
+  [key: string]: string;
+}
+
+interface Quiz {
+  title: string;
+  multipleAttempts: boolean;
+  attempts: number;
+  timeLimit: number;
+  userAttempts: string[];
+}
 
 export default function QuizDetails () {
   const { cid, qid } = useParams()
@@ -21,6 +45,24 @@ export default function QuizDetails () {
   const [showAccessCodeForm, setShowAccessCodeForm] = useState(false) // State to control form visibility
   const [enteredCode, setEnteredCode] = useState('') // State to store the entered access code
   const [accessCodeError, setAccessCodeError] = useState<string | null>(null) // State to store access code error message
+  const [incorrectQuestions, setIncorrectQuestions] = useState<string[]>([]);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [quizDetails, setQuizDetails] = useState<Quiz | null>(null);
+  const [submitCount, setSubmitCount] = useState<number>(0);
+  const [timeLeft, setTimeLeft] = useState<number>(60);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [highestScore, setHighestScore] = useState<number>(0);
+  const [highestScoreAnswers, setHighestScoreAnswers] = useState<Answers>({});
+  const [incorrectAnswers, setIncorrectAnswers] = useState<{
+    [key: string]: string;
+  }>({});
+  const [canAttempt, setCanAttempt] = useState<boolean>(true);
+  const [userHasAttempted, setUserHasAttempted] = useState<boolean>(false);
+  const questions = useSelector((state: any) =>
+    state.questionsReducer.questions.filter(
+      (question: any) => question.quiz === qid
+    )
+  );
 
   const fetchQuiz = async () => {
     try {
@@ -41,7 +83,30 @@ export default function QuizDetails () {
       setLoading(false)
     }
   }
-
+  const fetchQuizDetails = async () => {
+    try {
+      const fetchedQuizDetails = await quizClient.findQuiz(
+        cid as string,
+        qid as string
+      );
+      setQuizDetails(fetchedQuizDetails);
+      const attemptsCheck = await quizClient.checkAttempts(qid as string, currentUser?._id);
+      console.log("attempts check is:"+JSON.stringify(attemptsCheck));
+      setCanAttempt(attemptsCheck.canAttempt);
+      setUserHasAttempted(attemptsCheck.attempts > 0);
+      console.log("checking user has attempted:"+userHasAttempted);
+      if (fetchedQuizDetails.multipleAttempts) {
+        setAttemptsLeft(fetchedQuizDetails.attempts - attemptsCheck.attempts);
+      } else {
+        setAttemptsLeft(1 - attemptsCheck.attempts);
+      }
+      if (fetchedQuizDetails.timeLimit) {
+        setTimeLeft(fetchedQuizDetails.timeLimit);
+      }
+    } catch (error) {
+      console.error('Error fetching quiz details:', error);
+    }
+  };
   const togglePublish = async () => {
     if (!quiz) return
 
@@ -56,6 +121,7 @@ export default function QuizDetails () {
 
   useEffect(() => {
     fetchQuiz()
+    fetchQuizDetails()
   }, [cid, qid])
 
   const quiz = useSelector((state: any) =>
@@ -98,6 +164,11 @@ export default function QuizDetails () {
     }
   }
 
+  const handleViewResults = () => {
+    console.log('Viewing results');
+    navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
+  };
+
   if (loading) {
     return <div>Loading...</div>
   }
@@ -128,6 +199,19 @@ export default function QuizDetails () {
       >
         {currentUser.role === 'STUDENT' ? (
           <>
+          {userHasAttempted && (
+          <div className='alert alert-warning' role='alert'>
+          {userHasAttempted && (
+            <button
+              className='btn btn-primary me-1 text-center'
+              onClick={handleViewResults}
+            >
+              View Results
+            </button>
+          )}
+        </div>
+      )}
+            <div>
             <button
               id='wd-take-quiz-btn'
               className='btn btn-lg btn-primary me-1 text-center'
@@ -135,6 +219,7 @@ export default function QuizDetails () {
             >
               Take Quiz
             </button>
+            </div>
             {showAccessCodeForm && (
               <div className='card mt-3' style={{ width: '18rem' }}>
                 <div className='card-body'>
