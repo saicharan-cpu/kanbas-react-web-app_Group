@@ -1,4 +1,3 @@
-
 import { MdOutlineModeEditOutline } from 'react-icons/md'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import './index.css'
@@ -33,6 +32,7 @@ interface Quiz {
   attempts: number;
   timeLimit: number;
   userAttempts: string[];
+  accessCode?: string; // Make accessCode optional
 }
 
 export default function QuizDetails () {
@@ -83,6 +83,7 @@ export default function QuizDetails () {
       setLoading(false)
     }
   }
+
   const fetchQuizDetails = async () => {
     try {
       const fetchedQuizDetails = await quizClient.findQuiz(
@@ -107,6 +108,7 @@ export default function QuizDetails () {
       console.error('Error fetching quiz details:', error);
     }
   };
+
   const togglePublish = async () => {
     if (!quiz) return
 
@@ -138,6 +140,7 @@ export default function QuizDetails () {
       return dateString
     }
   }
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString)
@@ -153,11 +156,15 @@ export default function QuizDetails () {
   console.log('USER ' + currentUser.role)
 
   const handleTakeQuiz = () => {
-    setShowAccessCodeForm(true)
+    if (quiz?.accessCode) { // Show access code form only if accessCode is not empty
+      setShowAccessCodeForm(true)
+    } else {
+      navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/questions`)
+    }
   }
 
   const handleAccessCodeSubmit = () => {
-    if (enteredCode === quiz.accessCode) {
+    if (enteredCode === quiz?.accessCode) {
       navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/questions`)
     } else {
       setAccessCodeError('Invalid access code. Please try again.')
@@ -199,28 +206,28 @@ export default function QuizDetails () {
       >
         {currentUser.role === 'STUDENT' ? (
           <>
-          {userHasAttempted && (
-          <div className='alert alert-warning' role='alert'>
-          {userHasAttempted && (
-            <button
-              className='btn btn-primary me-1 text-center'
-              onClick={handleViewResults}
-            >
-              View Results
-            </button>
-          )}
-        </div>
-      )}
+            {userHasAttempted && (
+              <div className='alert alert-warning' role='alert'>
+                {userHasAttempted && (
+                  <button
+                    className='btn btn-primary me-1 text-center'
+                    onClick={handleViewResults}
+                  >
+                    View Results
+                  </button>
+                )}
+              </div>
+            )}
             <div>
-            <button
-              id='wd-take-quiz-btn'
-              className='btn btn-lg btn-primary me-1 text-center'
-              onClick={handleTakeQuiz}
-            >
-              Take Quiz
-            </button>
+              <button
+                id='wd-take-quiz-btn'
+                className='btn btn-lg btn-primary me-1 text-center'
+                onClick={handleTakeQuiz}
+              >
+                Take Quiz
+              </button>
             </div>
-            {showAccessCodeForm && (
+            {showAccessCodeForm && quiz.accessCode && (
               <div className='card mt-3' style={{ width: '18rem' }}>
                 <div className='card-body'>
                   <h5 className='card-title'>Enter Access Code</h5>
