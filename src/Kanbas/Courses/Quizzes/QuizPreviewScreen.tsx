@@ -91,7 +91,7 @@ export default function QuizPreview() {
         setAttemptsLeft(1 - attemptsCheck.attempts);
       }
       if (fetchedQuizDetails.timeLimit) {
-        setTimeLeft(fetchedQuizDetails.timeLimit);
+        setTimeLeft(fetchedQuizDetails.timeLimit*60);
       }
     } catch (error) {
       console.error('Error fetching quiz details:', error);
