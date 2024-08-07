@@ -1,4 +1,4 @@
-import React, { useState,  useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import ModulesControls from "./ModulesControls";
@@ -15,39 +15,47 @@ export default function Modules() {
   const dispatch = useDispatch();
   const courseModules = modules.filter((module: any) => module.course === cid);
   const [moduleName, setModuleName] = useState("");
+  const currentUser = useSelector((state: any) => state.accountReducer.currentUser);
+  const userRole = currentUser?.role;
+
   const fetchModules = async () => {
     const modules = await client.findModulesForCourse(cid as string);
     console.log("fetched modules are"+JSON.stringify(modules));
     dispatch(setModules(modules));
   };
+
   useEffect(() => {
     fetchModules();
   }, []);
+
   const createModule = async (module: any) => {
     const newModule = await client.createModule(cid as string, module);
     dispatch(addModule(newModule));
     console.log("The course modules after creating are:"+JSON.stringify(courseModules));
   };
+
   const removeModule = async (moduleId: string) => {
     await client.deleteModule(moduleId);
     dispatch(deleteModule(moduleId));
   };
+
   const saveModule = async (module: any) => {
     const status = await client.updateModule(module);
     dispatch(updateModule(module));
   };
 
-
   return (
     <div className="wd-modules-container">
-      <ModulesControls
-        moduleName={moduleName}
-        setModuleName={setModuleName}
-        addModule={() => {
-          createModule({ name: moduleName, course: cid });
-          setModuleName("");
-        }}
-      />
+      {userRole === 'FACULTY' && (
+        <ModulesControls
+          moduleName={moduleName}
+          setModuleName={setModuleName}
+          addModule={() => {
+            createModule({ name: moduleName, course: cid });
+            setModuleName("");
+          }}
+        />
+      )}
       <br/>
       <div className="wd-modules">
         <ul className="list-group rounded-0">
@@ -58,23 +66,25 @@ export default function Modules() {
                 {!module.editing && (
                   <span className="flex-grow-1">{module.name}</span>
                 )}
-                {module.editing && (
+                {module.editing && userRole === 'FACULTY' && (
                   <input
                     className="form-control w-50 d-inline-block"
                     onChange={(e) => saveModule({ ...module, name: e.target.value })}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        saveModule({ ...module, editing: false });;
+                        saveModule({ ...module, editing: false });
                       }
                     }}
                     value={module.name}
                   />
                 )}
-                <ModuleControlButtons
-                  moduleId={module._id}
-                  deleteModule={() => {removeModule(module._id)}}
-                  editModule={() => dispatch(editModule(module._id))}
-                />
+                {userRole === 'FACULTY' && (
+                  <ModuleControlButtons
+                    moduleId={module._id}
+                    deleteModule={() => {removeModule(module._id)}}
+                    editModule={() => dispatch(editModule(module._id))}
+                  />
+                )}
               </div>
               {module.lessons && (
                 <ul className="wd-lessons list-group rounded-0">
@@ -82,7 +92,9 @@ export default function Modules() {
                     <li key={lesson._id} className="wd-lesson list-group-item p-3 ps-1">
                       <BsGripVertical className="me-2 fs-3" />
                       {lesson.name}
-                      <LessonControlButtons />
+                      {userRole === 'FACULTY' && (
+                        <LessonControlButtons />
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -21,7 +21,7 @@ export default function Profile() {
     try {
       const account = await client.profile();
       setProfile(account);
-      dispatch(setCurrentUser(account)); // Save the profile, including the role, to the Redux store
+      dispatch(setCurrentUser(account));
     } catch (err: any) {
       navigate("/Kanbas/Account/Signin");
     }
