@@ -30,7 +30,7 @@ interface Quiz {
   userAttempts: string[];
 }
 
-export default function QuizPreview () {
+export default function QuizPreview() {
   const { cid, qid } = useParams<{ cid: string; qid: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -42,8 +42,7 @@ export default function QuizPreview () {
   const [submitCount, setSubmitCount] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-  const [highestScore, setHighestScore] = useState<number>(0);
-  const [highestScoreAnswers, setHighestScoreAnswers] = useState<Answers>({});
+  const [scores, setScores] = useState<number[]>([])
   const [incorrectAnswers, setIncorrectAnswers] = useState<{
     [key: string]: string;
   }>({});
@@ -111,7 +110,7 @@ export default function QuizPreview () {
   }, [qid]);
 
   useEffect(() => {
-    if (timeLeft > 0 && canAttempt) {
+    if (timeLeft > 0 && canAttempt && submitCount === 0) {
       const timerInterval = setInterval(() => {
         setTimeLeft(prevTime => prevTime - 1);
       }, 1000);
@@ -120,7 +119,7 @@ export default function QuizPreview () {
     } else if (timeLeft === 0) {
       handleSubmit();
     }
-  }, [timeLeft, canAttempt]);
+  }, [timeLeft, canAttempt, submitCount]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers(prevAnswers => ({
@@ -163,11 +162,13 @@ export default function QuizPreview () {
 
     try {
       for (const answerData of answerDataArray) {
+        console.log("Answer data for question :"+JSON.stringify(answerData));
         try {
           const existingAnswer = await answerClient.fetchAnswer(
             answerData.userId,
             answerData.questionId
           );
+          console.log("Answer data for question from db :"+JSON.stringify(existingAnswer));
           if (existingAnswer) {
             console.log('Updating answers: ' + answerData);
             await answerClient.updateAnswer(
@@ -207,15 +208,12 @@ export default function QuizPreview () {
       console.error('Error storing answers:', error);
     }
 
-    setScore(newScore);
-    setIncorrectQuestions(incorrect);
-    setIncorrectAnswers(incorrectAns);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setScore(newScore)
+    setScores([...scores, newScore])
+    setIncorrectQuestions(incorrect)
+    setIncorrectAnswers(incorrectAns)
 
-    if (newScore > highestScore) {
-      setHighestScore(newScore);
-      setHighestScoreAnswers(answers);
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setSubmitCount(prevCount => prevCount + 1);
     console.log('Quiz submitted successfully:', answers, 'Score:', newScore);
@@ -296,142 +294,7 @@ export default function QuizPreview () {
         </div>
       )}
       <h1>{quizDetails?.title}</h1>
-      {canAttempt && attemptsLeft !== null && attemptsLeft > 0 && timeLeft > 0 ? (
-        <>
-          {submitCount <
-            (quizDetails?.multipleAttempts ? quizDetails.attempts : 1) && (
-              <div className='alert alert-info' role='alert'>
-                Time left: {formatTime(timeLeft)}
-              </div>
-            )}
-          {quizDetails?.multipleAttempts ? (
-            attemptsLeft > 0 ? (
-              <div className='alert alert-warning' role='alert'>
-                This quiz allows multiple attempts. Attempts left: {attemptsLeft}
-              </div>
-            ) : (
-              <div className='alert alert-warning' role='alert'>
-                Unable to retake the quiz. You have used all your attempts.
-              </div>
-            )
-          ) : (
-            <div className='alert alert-warning' role='alert'>
-              You are only allowed to take this quiz once.
-            </div>
-          )}
-          {currentUser?.role !== 'STUDENT' && (
-            <div className='alert alert-info' role='alert'>
-              This is a preview of the published version of the quiz.
-            </div>
-          )}
-          <h2>Quiz Instructions</h2>
-          {questions.map((question: Question, index: number) => (
-            <div
-              key={question._id}
-              className={`card mb-3 ${
-                incorrectQuestions.includes(question._id) ? 'border-danger' : ''
-              }`}
-            >
-              <div className='card-header d-flex justify-content-between'>
-                <h3>Question {index + 1}</h3>
-                <span>{question.points} pts</span>
-              </div>
-              <div className='card-body'>
-                <h4>{question.title}</h4>
-                <p>{question.text}</p>
-                {question.type === 'multiple-choice' && (
-                  <div className='list-group'>
-                    {question.options?.map(option => (
-                      <label
-                        key={option}
-                        className='list-group-item d-flex align-items-center'
-                      >
-                        <input
-                          type='radio'
-                          name={`question-${question._id}`}
-                          value={option}
-                          checked={answers[question._id] === option}
-                          onChange={() => handleAnswerChange(question._id, option)}
-                          className='me-2'
-                        />
-                        {option}
-                      </label>
-                    ))}
-                  </div>
-                )}
-                {question.type === 'true-false' && (
-                  <div className='list-group'>
-                    <label className='list-group-item d-flex align-items-center'>
-                      <input
-                        type='radio'
-                        name={`question-${question._id}`}
-                        value='true'
-                        checked={answers[question._id] === 'true'}
-                        onChange={() => handleAnswerChange(question._id, 'true')}
-                        className='me-2'
-                      />
-                      True
-                    </label>
-                    <label className='list-group-item d-flex align-items-center'>
-                      <input
-                        type='radio'
-                        name={`question-${question._id}`}
-                        value='false'
-                        checked={answers[question._id] === 'false'}
-                        onChange={() => handleAnswerChange(question._id, 'false')}
-                        className='me-2'
-                      />
-                      False
-                    </label>
-                  </div>
-                )}
-                {question.type === 'fill-in-the-blank' && (
-                  <div className='mb-3'>
-                    <input
-                      type='text'
-                      className='form-control'
-                      value={answers[question._id] || ''}
-                      onChange={e =>
-                        handleAnswerChange(question._id, e.target.value)
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          <div className='d-flex justify-content-between mt-3'>
-            {currentUser?.role !== 'STUDENT' && (
-              <button onClick={handleEditQuiz} className='btn btn-secondary'>
-                Keep Editing This Quiz
-              </button>
-            )}
-            {(quizDetails?.multipleAttempts
-                ? submitCount < quizDetails.attempts
-                : submitCount < 1) && timeLeft > 0 ? (
-              <button onClick={handleSubmit} className='btn btn-primary'>
-                Submit Quiz
-              </button>
-            ) : (
-              <button
-                onClick={handleRetakeQuiz}
-                className='btn btn-warning'
-                disabled
-              >
-                You Can't Retake Quiz (Attempts left: 0)
-              </button>
-            )}
-            {submitCount > 0 && (
-              <button
-                className='btn btn-danger view-results-btn'
-                onClick={handleViewResults}
-              >
-                View Results
-              </button>
-            )}
-          </div>
-        </>
-      ) : (
+      {!canAttempt ? (
         <div className='alert alert-warning' role='alert'>
           Unable to take the quiz. You have used all your attempts.
           <button
@@ -441,14 +304,160 @@ export default function QuizPreview () {
             View Results
           </button>
         </div>
+      ) : (
+        attemptsLeft !== null && attemptsLeft > 0 && submitCount === 0 ? (
+          <>
+            {submitCount <
+              (quizDetails?.multipleAttempts ? quizDetails.attempts : 1) && (
+                <div className='alert alert-info' role='alert'>
+                  Time left: {formatTime(timeLeft)}
+                </div>
+              )}
+            {quizDetails?.multipleAttempts ? (
+              attemptsLeft > 0 ? (
+                <div className='alert alert-warning' role='alert'>
+                  This quiz allows multiple attempts. Attempts left: {attemptsLeft}
+                </div>
+              ) : (
+                <div className='alert alert-warning' role='alert'>
+                  Unable to retake the quiz. You have used all your attempts.
+                </div>
+              )
+            ) : (
+              <div className='alert alert-warning' role='alert'>
+                You are only allowed to take this quiz once.
+              </div>
+            )}
+            {currentUser?.role !== 'STUDENT' && (
+              <div className='alert alert-info' role='alert'>
+                This is a preview of the published version of the quiz.
+              </div>
+            )}
+            <h2>Quiz Instructions</h2>
+            {questions.map((question: Question, index: number) => (
+              <div
+                key={question._id}
+                className={`card mb-3 ${
+                  incorrectQuestions.includes(question._id) ? 'border-danger' : ''
+                }`}
+              >
+                <div className='card-header d-flex justify-content-between'>
+                  <h3>Question {index + 1}</h3>
+                  <span>{question.points} pts</span>
+                </div>
+                <div className='card-body'>
+                  <h4>{question.title}</h4>
+                  <p>{question.text}</p>
+                  {question.type === 'multiple-choice' && (
+                    <div className='list-group'>
+                      {question.options?.map(option => (
+                        <label
+                          key={option}
+                          className='list-group-item d-flex align-items-center'
+                        >
+                          <input
+                            type='radio'
+                            name={`question-${question._id}`}
+                            value={option}
+                            checked={answers[question._id] === option}
+                            onChange={() => handleAnswerChange(question._id, option)}
+                            className='me-2'
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {question.type === 'true-false' && (
+                    <div className='list-group'>
+                      <label className='list-group-item d-flex align-items-center'>
+                        <input
+                          type='radio'
+                          name={`question-${question._id}`}
+                          value='true'
+                          checked={answers[question._id] === 'true'}
+                          onChange={() => handleAnswerChange(question._id, 'true')}
+                          className='me-2'
+                        />
+                        True
+                      </label>
+                      <label className='list-group-item d-flex align-items-center'>
+                        <input
+                          type='radio'
+                          name={`question-${question._id}`}
+                          value='false'
+                          checked={answers[question._id] === 'false'}
+                          onChange={() => handleAnswerChange(question._id, 'false')}
+                          className='me-2'
+                        />
+                        False
+                      </label>
+                    </div>
+                  )}
+                  {question.type === 'fill-in-the-blank' && (
+                    <div className='mb-3'>
+                      <input
+                        type='text'
+                        className='form-control'
+                        value={answers[question._id] || ''}
+                        onChange={e =>
+                          handleAnswerChange(question._id, e.target.value)
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            <div className='d-flex justify-content-between mt-3'>
+              {currentUser?.role !== 'STUDENT' && (
+                <button onClick={handleEditQuiz} className='btn btn-secondary'>
+                  Keep Editing This Quiz
+                </button>
+              )}
+              {(quizDetails?.multipleAttempts
+                  ? submitCount < quizDetails.attempts
+                  : submitCount < 1) && timeLeft > 0 ? (
+                <button onClick={handleSubmit} className='btn btn-primary'>
+                  Submit Quiz
+                </button>
+              ) : (
+                <button
+                  onClick={handleRetakeQuiz}
+                  className='btn btn-warning'
+                  disabled
+                >
+                  You Can't Retake Quiz (Attempts left: 0)
+                </button>
+              )}
+              {submitCount > 0 && (
+                <button
+                  className='btn btn-danger view-results-btn'
+                  onClick={handleViewResults}
+                >
+                  View Results
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className='alert alert-warning' role='alert'>
+            <button
+              className='btn btn-danger view-results-btn mt-3'
+              onClick={handleViewResults}
+            >
+              View Results
+            </button>
+          </div>
+        )
       )}
       {score !== null && (
         <>
-          {highestScore > 0 && (
+          {score > 0 && (
             <div className='mt-5'>
-              <h3>Highest Score: {highestScore}</h3>
+              <h3> Score: {score}</h3>
               <ul className='list-group'>
-                {Object.entries(highestScoreAnswers).map(
+                {Object.entries(answers).map(
                   ([questionId, answer]) => (
                     <li key={questionId} className='list-group-item'>
                       <strong>
