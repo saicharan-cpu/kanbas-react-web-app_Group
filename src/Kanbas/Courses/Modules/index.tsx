@@ -17,6 +17,7 @@ export default function Modules() {
   const [moduleName, setModuleName] = useState("");
   const fetchModules = async () => {
     const modules = await client.findModulesForCourse(cid as string);
+    console.log("fetched modules are"+JSON.stringify(modules));
     dispatch(setModules(modules));
   };
   useEffect(() => {
@@ -25,6 +26,7 @@ export default function Modules() {
   const createModule = async (module: any) => {
     const newModule = await client.createModule(cid as string, module);
     dispatch(addModule(newModule));
+    console.log("The course modules after creating are:"+JSON.stringify(courseModules));
   };
   const removeModule = async (moduleId: string) => {
     await client.deleteModule(moduleId);
