@@ -16,11 +16,15 @@ export default function Assignments() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
+  const currentUser = useSelector((state: any) => state.accountReducer.currentUser);
+  const userRole = currentUser?.role;
   const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
+  
   const fetchAssignments = async () => {
     const assignments = await assignmentsClient.fetchAssignmentForCourse(cid as string);
     dispatch(setAssignment(assignments));
   };
+
   useEffect(() => {
     fetchAssignments();
   }, [dispatch]);
@@ -46,18 +50,20 @@ export default function Assignments() {
             />
           </div>
         </div>
-        <div className="col-md-6 text-md-end">
-          <button id="wd-add-assignment-group" className="btn btn-outline-secondary me-2">
-            <FaPlus className="me-1" /> Group
-          </button>
-          <button
-            id="wd-add-assignment"
-            className="btn btn-danger"
-            onClick={() => navigate(`/Kanbas/Courses/${cid}/Assignments/new`)}
-          >
-            <FaPlus className="me-1" /> Assignment
-          </button>
-        </div>
+        {userRole === 'FACULTY' && (
+          <div className="col-md-6 text-md-end">
+            <button id="wd-add-assignment-group" className="btn btn-outline-secondary me-2">
+              <FaPlus className="me-1" /> Group
+            </button>
+            <button
+              id="wd-add-assignment"
+              className="btn btn-danger"
+              onClick={() => navigate(`/Kanbas/Courses/${cid}/Assignments/new`)}
+            >
+              <FaPlus className="me-1" /> Assignment
+            </button>
+          </div>
+        )}
       </div>
       <div className="assignment-section">
         <div className="assignment-title d-flex align-items-center p-3 bg-light">
@@ -71,10 +77,12 @@ export default function Assignments() {
           <div className="d-flex align-items-center">
             <span className="badge bg-secondary ms-2">40% of Total</span>
           </div>
-          <div>
-            <BsPlus className="fs-4" />
-            <IoEllipsisVertical className="fs-4" />
-          </div>
+          {userRole === 'FACULTY' && (
+            <div>
+              <BsPlus className="fs-4" />
+              <IoEllipsisVertical className="fs-4" />
+            </div>
+          )}
         </div>
         <ul id="wd-assignment-list" className="list-unstyled">
           {courseAssignments.map((assignment: any) => (
@@ -84,23 +92,31 @@ export default function Assignments() {
                 <TfiWrite />
               </div>
               <div className="assignment-details flex-grow-1">
-                <Link
-                  to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`}
-                  className="wd-assignment-link d-block mb-1"
-                  style={{ color: 'black', textDecoration: 'none' }}
-                >
-                  <b>{assignment.title}</b>
-                </Link>
+                {userRole === 'FACULTY' ? (
+                  <Link
+                    to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`}
+                    className="wd-assignment-link d-block mb-1"
+                    style={{ color: 'black', textDecoration: 'none' }}
+                  >
+                    <b>{assignment.title}</b>
+                  </Link>
+                ) : (
+                  <span className="wd-assignment-link d-block mb-1" style={{ color: 'black', textDecoration: 'none' }}>
+                    <b>{assignment.title}</b>
+                  </span>
+                )}
                 <span className="details">
                   <span style={{ color: 'red' }}>Multiple Modules</span> | <b>Not Available until</b> {assignment.notAvailableUntil} | <b>Due</b> {assignment.dueDate} | 100 pts.
                 </span>
               </div>
-              <div className="d-flex align-items-center">
-                <LessonControlButtons />
-                <button className="btn btn-link text-danger" onClick={() => handleDelete(assignment._id)}>
-                  <BsTrash />
-                </button>
-              </div>
+              {userRole === 'FACULTY' && (
+                <div className="d-flex align-items-center">
+                  <LessonControlButtons />
+                  <button className="btn btn-link text-danger" onClick={() => handleDelete(assignment._id)}>
+                    <BsTrash />
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
