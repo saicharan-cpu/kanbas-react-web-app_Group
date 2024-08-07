@@ -92,7 +92,7 @@ export default function QuizPreview () {
         setAttemptsLeft(1 - attemptsCheck.attempts);
       }
       if (fetchedQuizDetails.timeLimit) {
-        setTimeLeft(fetchedQuizDetails.timeLimit);
+        setTimeLeft(fetchedQuizDetails.timeLimit * 60); // Time limit in seconds
       }
     } catch (error) {
       console.error('Error fetching quiz details:', error);
@@ -220,14 +220,14 @@ export default function QuizPreview () {
     setSubmitCount(prevCount => prevCount + 1);
     console.log('Quiz submitted successfully:', answers, 'Score:', newScore);
 
-    setTimeLeft(60);
+    setTimeLeft(60 * (quizDetails?.timeLimit || 1));
   };
 
   const handleRetakeQuiz = () => {
     setAnswers({});
     setScore(null);
     setIncorrectQuestions([]);
-    setTimeLeft(60);
+    setTimeLeft(60 * (quizDetails?.timeLimit || 1));
   };
 
   const getScoreComment = (percentage: number) => {
@@ -270,12 +270,25 @@ export default function QuizPreview () {
         const savedAttemptsLeft = localStorage.getItem(
           `quiz-${qid}-attemptsLeft`
         );
-        setAttemptsLeft(
-          savedAttemptsLeft ? parseInt(savedAttemptsLeft) : quizDetails.attempts
+        setAttemptsLeft(savedAttemptsLeft ? parseInt(savedAttemptsLeft) : 0);
+        setSubmitCount(
+          savedAttemptsLeft ? quizDetails.attempts - parseInt(savedAttemptsLeft) : 0
         );
       }
     }
-  }, [quizDetails?.multipleAttempts]);
+  }, [quizDetails]);
+
+  useEffect(() => {
+    if (quizDetails?.multipleAttempts) {
+      localStorage.setItem(`quiz-${qid}-attemptsLeft`, attemptsLeft?.toString() ?? '0');
+    }
+  }, [attemptsLeft, quizDetails]);
+
+  useEffect(() => {
+    if (quizDetails?.timeLimit) {
+      setTimeLeft(quizDetails.timeLimit * 60);
+    }
+  }, [quizDetails]);
 
   return (
     <div className='container mt-5'>
