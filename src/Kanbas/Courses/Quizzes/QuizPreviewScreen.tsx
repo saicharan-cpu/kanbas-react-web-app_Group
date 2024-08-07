@@ -42,8 +42,7 @@ export default function QuizPreview() {
   const [submitCount, setSubmitCount] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-  const [highestScore, setHighestScore] = useState<number>(0);
-  const [highestScoreAnswers, setHighestScoreAnswers] = useState<Answers>({});
+  const [scores, setScores] = useState<number[]>([])
   const [incorrectAnswers, setIncorrectAnswers] = useState<{
     [key: string]: string;
   }>({});
@@ -163,11 +162,13 @@ export default function QuizPreview() {
 
     try {
       for (const answerData of answerDataArray) {
+        console.log("Answer data for question :"+JSON.stringify(answerData));
         try {
           const existingAnswer = await answerClient.fetchAnswer(
             answerData.userId,
             answerData.questionId
           );
+          console.log("Answer data for question from db :"+JSON.stringify(existingAnswer));
           if (existingAnswer) {
             console.log('Updating answers: ' + answerData);
             await answerClient.updateAnswer(
@@ -207,15 +208,12 @@ export default function QuizPreview() {
       console.error('Error storing answers:', error);
     }
 
-    setScore(newScore);
-    setIncorrectQuestions(incorrect);
-    setIncorrectAnswers(incorrectAns);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setScore(newScore)
+    setScores([...scores, newScore])
+    setIncorrectQuestions(incorrect)
+    setIncorrectAnswers(incorrectAns)
 
-    if (newScore > highestScore) {
-      setHighestScore(newScore);
-      setHighestScoreAnswers(answers);
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setSubmitCount(prevCount => prevCount + 1);
     console.log('Quiz submitted successfully:', answers, 'Score:', newScore);
@@ -455,11 +453,11 @@ export default function QuizPreview() {
       )}
       {score !== null && (
         <>
-          {highestScore > 0 && (
+          {score > 0 && (
             <div className='mt-5'>
-              <h3>Highest Score: {highestScore}</h3>
+              <h3> Score: {score}</h3>
               <ul className='list-group'>
-                {Object.entries(highestScoreAnswers).map(
+                {Object.entries(answers).map(
                   ([questionId, answer]) => (
                     <li key={questionId} className='list-group-item'>
                       <strong>
