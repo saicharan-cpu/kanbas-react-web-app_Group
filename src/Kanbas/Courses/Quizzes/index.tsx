@@ -12,15 +12,34 @@ import { VscNotebook } from 'react-icons/vsc';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import './style.css';
-import { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } from './reducer';
+import { deleteQuizzes, updateQuizzes, setQuizzes } from './reducer';
 import * as client from './client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AiOutlineStop } from 'react-icons/ai';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
+import * as questionClient from './QuestionClient';
+import * as answerClient from './AnswerClient';
+import * as quizClient from './client';
 
 const defaultDate = new Date().toISOString().split('T')[0];
+
+interface Question {
+  _id: string;
+  points: number;
+  answers: string[];
+}
+
+interface Answer {
+  questionId: string;
+  answers: string;
+}
+
+interface QuizDetails {
+  score: number;
+  numQuestions: number;
+}
 
 export default function Quiz() {
   const { cid } = useParams();
@@ -31,24 +50,38 @@ export default function Quiz() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const userRole = currentUser.role;
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = useCallback(async () => {
     try {
-      console.log('Fetching courses for id:' + cid);
       const quizzes = await client.findQuizzesForCourse(cid as string);
       dispatch(setQuizzes(quizzes));
     } catch (error) {
       console.error('Error fetching quizzes:', error);
     }
-  };
+  }, [cid, dispatch]);
 
   useEffect(() => {
     fetchQuizzes();
-  }, [cid, dispatch]);
+  }, [fetchQuizzes]);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({});
   const [searchInput, setSearchInput] = useState('');
+  const [quizDetailsMap, setQuizDetailsMap] = useState<{ [key: string]: QuizDetails }>({});
+  const popupRef = useRef<HTMLDivElement | null>(null);
+
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      setShowPopup({});
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleClickOutside]);
 
   const handleDeleteClick = (quizId: string) => {
     setSelectedQuizId(quizId);
@@ -100,6 +133,53 @@ export default function Quiz() {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value);
+  };
+
+  const fetchUserAnswers = useCallback(
+    async (questions: Question[]): Promise<Answer[]> => {
+      try {
+        const answers = await Promise.all(
+          questions.map(async (question: Question) => {
+            const answer = await answerClient.fetchAnswer(
+              currentUser?._id,
+              question._id
+            );
+            return { ...answer, questionId: question._id };
+          })
+        );
+        return answers;
+      } catch (error) {
+        console.error('Error fetching user answers:', error);
+        return [];
+      }
+    },
+    [currentUser?._id]
+  );
+
+  const calculateScore = useCallback((questions: Question[], userAnswers: Answer[]): number => {
+    let newScore = 0;
+    questions.forEach((question) => {
+      const userAnswer = userAnswers.find((answer) => answer.questionId === question._id);
+      if (userAnswer && userAnswer.answers === question.answers[0]) {
+        newScore += question.points;
+      }
+    });
+    return newScore;
+  }, []);
+
+  const getQuizDetails = useCallback(async (quizId: string): Promise<QuizDetails> => {
+    const questions = await questionClient.findAllQuestionsByQuizId(quizId);
+    const answers = await fetchUserAnswers(questions);
+    const score = calculateScore(questions, answers);
+    return { score, numQuestions: questions.length };
+  }, [fetchUserAnswers, calculateScore]);
+
+  const fetchQuizDetails = async (quizId: string) => {
+    const details = await getQuizDetails(quizId);
+    setQuizDetailsMap((prevDetailsMap: { [key: string]: QuizDetails }) => ({
+      ...prevDetailsMap,
+      [quizId]: details,
+    }));
   };
 
   const filteredQuizzes =
@@ -184,6 +264,13 @@ export default function Quiz() {
                 userRole === 'STUDENT' &&
                 (currentDate < availableFrom || currentDate > untilDate);
 
+              // Fetch quiz details if not already fetched
+              if (!quizDetailsMap[quiz._id]) {
+                fetchQuizDetails(quiz._id);
+              }
+
+              const quizDetails = quizDetailsMap[quiz._id];
+
               return (
                 <li
                   key={quiz._id}
@@ -214,10 +301,17 @@ export default function Quiz() {
                         <strong> Due</strong>{' '}
                         {formatDate(quiz.dueDate) || defaultDate} |
                         <strong> {quiz.points || 'No'}</strong> pts
+                        {quizDetails && (
+                          <>
+                            <br />
+                            <strong>Score:</strong> {quizDetails.score} pts |{' '}
+                            <strong>Questions:</strong> {quizDetails.numQuestions}
+                          </>
+                        )}
                       </span>
                     </div>
                     {userRole === 'FACULTY' && (
-                      <div className='d-flex position-relative'>
+                      <div className='d-flex position-relative' ref={popupRef}>
                         <div className='d-flex'>
                           {quiz.published ? (
                             <FaCheckCircle className='text-success me-2' />
