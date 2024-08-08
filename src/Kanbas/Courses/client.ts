@@ -19,3 +19,8 @@ export const updateCourse = async (course: any) => {
     const response = await axiosWithCredentials.put(`${COURSES_API}/${course._id}`, course);
     return response.data;
   };
+
+  export const fetchPublishedCourses = async () => {
+    const response = await axiosWithCredentials.get(`${COURSES_API}/published`);
+    return response.data;
+  };
