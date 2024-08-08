@@ -1,211 +1,120 @@
-// import { BsGripVertical, BsPlus } from 'react-icons/bs'
-// import {
-//   FaCheckCircle,
-//   FaPlus,
-//   FaSearch,
-//   FaTrash,
-//   FaRegSmileWink
-// } from 'react-icons/fa'
-// import { IoIosRocket } from 'react-icons/io'
-// import { IoEllipsisVertical } from 'react-icons/io5'
-// import { VscNotebook } from 'react-icons/vsc'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { Link, useParams } from 'react-router-dom'
-// import './style.css'
-// import { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } from './reducer'
-// import * as client from './client'
-// import { useEffect, useState } from 'react'
-// import { format } from 'date-fns'
-// import { AiOutlineStop } from 'react-icons/ai'
-// import { MdOutlineModeEditOutline } from 'react-icons/md'
-
-// const defaultDate = new Date().toISOString().split('T')[0]
-
-// export default function Quiz () {
-//   const { cid } = useParams()
-//   const dispatch = useDispatch()
-
-//   const quizzes = useSelector((state: any) =>
-//     state.quizzesReducer.quizzes.filter((quiz: any) => quiz.course === cid)
-//   )
-
-//   const { currentUser } = useSelector((state: any) => state.accountReducer)
-//   const userRole = currentUser.role
-
-//   const fetchQuizzes = async () => {
-//     try {
-//       const quizzes = await client.findQuizzesForCourse(cid as string)
-//       dispatch(setQuizzes(quizzes))
-//     } catch (error) {
-//       console.error('Error fetching quizzes:', error)
-//     }
-//   }
-
-//   useEffect(() => {
-//     fetchQuizzes()
-//   }, [cid, dispatch])
-
-//   const [showModal, setShowModal] = useState(false)
-//   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null)
-//   const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({})
-
-//   const handleDeleteClick = (quizId: string) => {
-//     setSelectedQuizId(quizId)
-//     setShowModal(true)
-//   }
-
-//   const formatDate = (dateString: string) => {
-//     try {
-//       const date = new Date(dateString)
-//       return format(date, "MMM d 'at' h a")
-//     } catch (error) {
-//       console.error('Error formatting date:', error)
-//       return dateString
-//     }
-//   }
-
-//   const handleDeleteConfirm = async () => {
-//     if (selectedQuizId) {
-//       await client.deleteQuiz(selectedQuizId)
-//       dispatch(deleteQuizzes(selectedQuizId))
-//       setShowModal(false)
-//       setSelectedQuizId(null)
-//     }
-//   }
-
-//   const handleDeleteCancel = () => {
-//     setShowModal(false)
-//     setSelectedQuizId(null)
-//   }
-
-//   const togglePopup = (quizId: string) => {
-//     setShowPopup(prev => ({
-//       ...prev,
-//       [quizId]: !prev[quizId]
-//     }))
-//   }
-
-//   const handlePublishToggle = async (quiz: any) => {
-//     const updatedQuiz = { ...quiz, published: !quiz.published }
-//     try {
-//       await client.updateQuiz(updatedQuiz)
-//       dispatch(updateQuizzes(updatedQuiz))
-//     } catch (error) {
-//       console.error('Error updating quiz:', error)
-//     }
-//   }
-
-//   const filteredQuizzes =
-//     userRole === 'STUDENT'
-//       ? quizzes.filter((quiz: any) => quiz.published)
-//       : quizzes
-
-//   const currentDate = new Date()
-
-import { BsGripVertical, BsPlus } from 'react-icons/bs'
+import { BsGripVertical, BsPlus } from 'react-icons/bs';
 import {
   FaCheckCircle,
   FaPlus,
   FaSearch,
   FaTrash,
-  FaRegSmileWink
-} from 'react-icons/fa'
-import { IoIosRocket } from 'react-icons/io'
-import { IoEllipsisVertical } from 'react-icons/io5'
-import { VscNotebook } from 'react-icons/vsc'
-import { useDispatch, useSelector } from 'react-redux'
-import { Link, useParams } from 'react-router-dom'
-import './style.css'
-import { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } from './reducer'
-import * as client from './client'
-import { useEffect, useState } from 'react'
-import { format } from 'date-fns'
-import 'bootstrap/dist/css/bootstrap.min.css'
+  FaRegSmileWink,
+} from 'react-icons/fa';
+import { IoIosRocket } from 'react-icons/io';
+import { IoEllipsisVertical } from 'react-icons/io5';
+import { VscNotebook } from 'react-icons/vsc';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
+import './style.css';
+import { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } from './reducer';
+import * as client from './client';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { AiOutlineStop } from 'react-icons/ai';
+import { MdOutlineModeEditOutline } from 'react-icons/md';
 
-import { AiOutlineStop } from 'react-icons/ai'
-import { MdOutlineModeEditOutline } from 'react-icons/md'
-const defaultDate = new Date().toISOString().split('T')[0]
-export default function Quiz () {
-  const { cid } = useParams()
-  const dispatch = useDispatch()
+const defaultDate = new Date().toISOString().split('T')[0];
+
+export default function Quiz() {
+  const { cid } = useParams();
+  const dispatch = useDispatch();
   const quizzes = useSelector((state: any) =>
     state.quizzesReducer.quizzes.filter((quiz: any) => quiz.course === cid)
-  )
-  const { currentUser } = useSelector((state: any) => state.accountReducer)
-  const userRole = currentUser.role
+  );
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const userRole = currentUser.role;
+
   const fetchQuizzes = async () => {
     try {
-      console.log("Fetching courses for id:"+cid);
-      const quizzes = await client.findQuizzesForCourse(cid as string)
-      dispatch(setQuizzes(quizzes))
+      console.log('Fetching courses for id:' + cid);
+      const quizzes = await client.findQuizzesForCourse(cid as string);
+      dispatch(setQuizzes(quizzes));
     } catch (error) {
-      console.error('Error fetching quizzes:', error)
+      console.error('Error fetching quizzes:', error);
     }
-  }
+  };
+
   useEffect(() => {
-    fetchQuizzes()
-  }, [cid, dispatch])
-  const [showModal, setShowModal] = useState(false)
-  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null)
-  const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({})
-  const [searchInput, setSearchInput] = useState('')
+    fetchQuizzes();
+  }, [cid, dispatch]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({});
+  const [searchInput, setSearchInput] = useState('');
+
   const handleDeleteClick = (quizId: string) => {
-    setSelectedQuizId(quizId)
-    setShowModal(true)
-  }
+    setSelectedQuizId(quizId);
+    setShowModal(true);
+    setShowPopup({});
+  };
+
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString)
-      return format(date, "MMM d 'at' h a")
+      const date = new Date(dateString);
+      return format(date, "MMM d 'at' h a");
     } catch (error) {
-      console.error('Error formatting date:', error)
-      return dateString
+      console.error('Error formatting date:', error);
+      return dateString;
     }
-  }
+  };
+
   const handleDeleteConfirm = async () => {
     if (selectedQuizId) {
-      await client.deleteQuiz(selectedQuizId)
-      dispatch(deleteQuizzes(selectedQuizId))
-      setShowModal(false)
-      setSelectedQuizId(null)
+      await client.deleteQuiz(selectedQuizId);
+      dispatch(deleteQuizzes(selectedQuizId));
+      setShowModal(false);
+      setSelectedQuizId(null);
     }
-  }
+  };
+
   const handleDeleteCancel = () => {
-    setShowModal(false)
-    setSelectedQuizId(null)
-  }
+    setShowModal(false);
+    setSelectedQuizId(null);
+  };
+
   const togglePopup = (quizId: string) => {
-    setShowPopup(prev => ({
+    setShowPopup((prev) => ({
       ...prev,
-      [quizId]: !prev[quizId]
-    }))
-  }
+      [quizId]: !prev[quizId],
+    }));
+  };
+
   const handlePublishToggle = async (quiz: any) => {
-    const updatedQuiz = { ...quiz, published: !quiz.published }
+    const updatedQuiz = { ...quiz, published: !quiz.published };
     try {
-      await client.updateQuiz(updatedQuiz)
-      dispatch(updateQuizzes(updatedQuiz))
+      await client.updateQuiz(updatedQuiz);
+      dispatch(updateQuizzes(updatedQuiz));
+      setShowPopup({});
     } catch (error) {
-      console.error('Error updating quiz:', error)
+      console.error('Error updating quiz:', error);
     }
-  }
+  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value)
-  }
+    setSearchInput(event.target.value);
+  };
 
   const filteredQuizzes =
     userRole === 'STUDENT'
       ? quizzes.filter((quiz: any) => quiz.published)
       : quizzes.filter((quiz: any) =>
           quiz.title.toLowerCase().includes(searchInput.toLowerCase())
-        )
-  const currentDate = new Date()
+        );
+
+  const currentDate = new Date();
 
   return (
     <div id='wd-quiz-list' className='container'>
       <div className='d-flex justify-content-between align-items-center mb-3'>
-        {/* <div className='input-group w-50'>
+        <div className='input-group w-50'>
           <span className='input-group-text bg-white border-end-0'>
             <FaSearch />
           </span>
@@ -213,22 +122,9 @@ export default function Quiz () {
             id='wd-search-quizzes'
             className='form-control border-start-0'
             placeholder='Search for Quizzes'
-          />
-        </div> */}
-
-        <div className='input-group w-50'>
-          {' '}
-          <span className='input-group-text bg-white border-end-0'>
-            {' '}
-            <FaSearch />{' '}
-          </span>{' '}
-          <input
-            id='wd-search-quizzes'
-            className='form-control border-start-0'
-            placeholder='Search for Quizzes'
             value={searchInput}
             onChange={handleSearchChange}
-          />{' '}
+          />
         </div>
 
         {userRole === 'FACULTY' && (
@@ -260,20 +156,20 @@ export default function Quiz () {
 
           <div id='wd-quiz-list' className='list-group rounded-0'>
             {filteredQuizzes.map((quiz: any) => {
-              const availableFrom = new Date(quiz.availableDate)
-              const untilDate = new Date(quiz.untilDate)
-              const dueDate = new Date(quiz.dueDate)
+              const availableFrom = new Date(quiz.availableDate);
+              const untilDate = new Date(quiz.untilDate);
+              const dueDate = new Date(quiz.dueDate);
 
-              let availabilityStatus
+              let availabilityStatus;
               if (currentDate < availableFrom) {
                 availabilityStatus = (
                   <span>
                     <strong> Not available until </strong>{' '}
                     {formatDate(quiz.availableDate)}
                   </span>
-                )
+                );
               } else if (currentDate > untilDate) {
-                availabilityStatus = <span className='text-danger'>Closed</span>
+                availabilityStatus = <span className='text-danger'>Closed</span>;
               } else {
                 availabilityStatus = (
                   <span>
@@ -281,12 +177,12 @@ export default function Quiz () {
                     {formatDate(quiz.availableDate)} <strong> until </strong>{' '}
                     {formatDate(quiz.untilDate)}
                   </span>
-                )
+                );
               }
 
               const isStudentRestricted =
                 userRole === 'STUDENT' &&
-                (currentDate < availableFrom || currentDate > untilDate)
+                (currentDate < availableFrom || currentDate > untilDate);
 
               return (
                 <li
@@ -339,6 +235,7 @@ export default function Quiz () {
                               id='wd-quiz-edit-btn'
                               className='dropdown-item'
                               to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}/editor`}
+                              onClick={() => setShowPopup({})}
                             >
                               <MdOutlineModeEditOutline />
                               Edit
@@ -375,13 +272,11 @@ export default function Quiz () {
                     )}
                   </div>
                 </li>
-              )
+              );
             })}
           </div>
         </li>
       </ul>
-
-      {/* Delete Confirmation Modal */}
       <div
         id='delete-modal'
         className={`modal fade ${showModal ? 'show' : ''}`}
@@ -426,5 +321,5 @@ export default function Quiz () {
         </div>
       </div>
     </div>
-  )
+  );
 }
