@@ -12,7 +12,7 @@ import { VscNotebook } from 'react-icons/vsc';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import './style.css';
-import { deleteQuizzes, updateQuizzes, setQuizzes } from './reducer';
+import { deleteQuizzes, setQuizzes } from './reducer';
 import * as client from './client';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
@@ -105,6 +105,7 @@ export default function Quiz() {
       dispatch(deleteQuizzes(selectedQuizId));
       setShowModal(false);
       setSelectedQuizId(null);
+      fetchQuizzes(); // Fetch quizzes after deletion
     }
   };
 
@@ -124,8 +125,8 @@ export default function Quiz() {
     const updatedQuiz = { ...quiz, published: !quiz.published };
     try {
       await client.updateQuiz(updatedQuiz);
-      dispatch(updateQuizzes(updatedQuiz));
       setShowPopup({});
+      fetchQuizzes(); // Fetch quizzes after publish/unpublish
     } catch (error) {
       console.error('Error updating quiz:', error);
     }
@@ -311,7 +312,7 @@ export default function Quiz() {
                       </span>
                     </div>
                     {userRole === 'FACULTY' && (
-                      <div className='d-flex position-relative' ref={popupRef}>
+                      <div className='d-flex position-relative'>
                         <div className='d-flex'>
                           {quiz.published ? (
                             <FaCheckCircle className='text-success me-2' />
@@ -336,7 +337,10 @@ export default function Quiz() {
                             </Link>
                             <button
                               className='dropdown-item text-danger'
-                              onClick={() => handleDeleteClick(quiz._id)}
+                              onClick={() => {
+                                handleDeleteClick(quiz._id);
+                                setShowPopup({});
+                              }}
                             >
                               <FaTrash />
                               Delete
@@ -346,7 +350,10 @@ export default function Quiz() {
                               className={`dropdown-item ${
                                 quiz.published ? 'text-success' : 'text-danger'
                               }`}
-                              onClick={() => handlePublishToggle(quiz)}
+                              onClick={() => {
+                                handlePublishToggle(quiz);
+                                setShowPopup({});
+                              }}
                             >
                               {quiz.published ? (
                                 <>
