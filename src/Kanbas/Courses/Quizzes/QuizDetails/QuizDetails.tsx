@@ -171,9 +171,29 @@ export default function QuizDetails () {
     }
   }
 
-  const handleViewResults = () => {
-    console.log('Viewing results');
-    navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
+  const handleViewResults = async () => {
+    try {
+      if (quizDetails?.multipleAttempts) {
+        const updatedQuiz: Quiz = {
+          ...quizDetails,
+          userAttempts: Array(quizDetails.attempts).fill(currentUser?._id),
+        } as Quiz;
+        await quizClient.updateQuiz(updatedQuiz);
+        setQuizDetails(updatedQuiz);
+      } else {
+        const updatedQuiz: Quiz = {
+          ...quizDetails,
+          userAttempts: [currentUser?._id],
+        } as Quiz;
+        await quizClient.updateQuiz(updatedQuiz);
+        setQuizDetails(updatedQuiz);
+      }
+      setAttemptsLeft(0);
+      setCanAttempt(false);
+      navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
+    } catch (error) {
+      console.error('Error updating quiz attempts:', error);
+    }
   };
 
   if (loading) {
@@ -218,7 +238,7 @@ export default function QuizDetails () {
                 )}
               </div>
             )}
-            <div>
+            {canAttempt && (<div>
               <button
                 id='wd-take-quiz-btn'
                 className='btn btn-lg btn-primary me-1 text-center'
@@ -226,7 +246,7 @@ export default function QuizDetails () {
               >
                 Take Quiz
               </button>
-            </div>
+            </div>)}
             {showAccessCodeForm && quiz.accessCode && (
               <div className='card mt-3' style={{ width: '18rem' }}>
                 <div className='card-body'>

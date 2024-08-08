@@ -121,6 +121,8 @@ export default function QuizResults () {
 
   return (
     <div className='container mt-4'>
+      <b>You cannot this quiz anymore as you have seen the results.</b>
+      <br/>
       <h2 className='quiz-title text-center'>{quizDetails?.title}</h2>
       <h3 className='score text-center'>Your Score: {score}</h3>
       {questions.map((question: Question) => {

@@ -42,7 +42,7 @@ export default function QuizPreview() {
   const [submitCount, setSubmitCount] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(60);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-  const [scores, setScores] = useState<number[]>([])
+  const [scores, setScores] = useState<number[]>([]);
   const [incorrectAnswers, setIncorrectAnswers] = useState<{
     [key: string]: string;
   }>({});
@@ -91,7 +91,7 @@ export default function QuizPreview() {
         setAttemptsLeft(1 - attemptsCheck.attempts);
       }
       if (fetchedQuizDetails.timeLimit) {
-        setTimeLeft(fetchedQuizDetails.timeLimit*60);
+        setTimeLeft(fetchedQuizDetails.timeLimit * 60);
       }
     } catch (error) {
       console.error('Error fetching quiz details:', error);
@@ -112,7 +112,7 @@ export default function QuizPreview() {
   useEffect(() => {
     if (timeLeft > 0 && canAttempt && submitCount === 0) {
       const timerInterval = setInterval(() => {
-        setTimeLeft(prevTime => prevTime - 1);
+        setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
       setTimer(timerInterval);
       return () => clearInterval(timerInterval);
@@ -122,9 +122,9 @@ export default function QuizPreview() {
   }, [timeLeft, canAttempt, submitCount]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
-    setAnswers(prevAnswers => ({
+    setAnswers((prevAnswers) => ({
       ...prevAnswers,
-      [questionId]: answer
+      [questionId]: answer,
     }));
   };
 
@@ -153,7 +153,7 @@ export default function QuizPreview() {
         answer: answers[question._id],
         score: newScore,
         attemptNumber: submitCount + 1,
-        submittedAt: new Date()
+        submittedAt: new Date(),
       };
       console.log('Answer Data:', answerData);
 
@@ -162,13 +162,15 @@ export default function QuizPreview() {
 
     try {
       for (const answerData of answerDataArray) {
-        console.log("Answer data for question :"+JSON.stringify(answerData));
+        console.log('Answer data for question :' + JSON.stringify(answerData));
         try {
           const existingAnswer = await answerClient.fetchAnswer(
             answerData.userId,
             answerData.questionId
           );
-          console.log("Answer data for question from db :"+JSON.stringify(existingAnswer));
+          console.log(
+            'Answer data for question from db :' + JSON.stringify(existingAnswer)
+          );
           if (existingAnswer) {
             console.log('Updating answers: ' + answerData);
             await answerClient.updateAnswer(
@@ -200,22 +202,22 @@ export default function QuizPreview() {
       // Update quiz with user attempt
       const updatedQuiz = {
         ...quizDetails,
-        userAttempts: [...(quizDetails?.userAttempts || []), currentUser?._id]
-      };
+        userAttempts: [...(quizDetails?.userAttempts || []), currentUser?._id],
+      } as Quiz;
       await quizClient.updateQuiz(updatedQuiz);
 
     } catch (error) {
       console.error('Error storing answers:', error);
     }
 
-    setScore(newScore)
-    setScores([...scores, newScore])
-    setIncorrectQuestions(incorrect)
-    setIncorrectAnswers(incorrectAns)
+    setScore(newScore);
+    setScores([...scores, newScore]);
+    setIncorrectQuestions(incorrect);
+    setIncorrectAnswers(incorrectAns);
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    setSubmitCount(prevCount => prevCount + 1);
+    setSubmitCount((prevCount) => prevCount + 1);
     console.log('Quiz submitted successfully:', answers, 'Score:', newScore);
 
     setTimeLeft(60);
@@ -242,9 +244,29 @@ export default function QuizPreview() {
     }
   };
 
-  const handleViewResults = () => {
-    console.log('Viewing results');
-    navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
+  const handleViewResults = async () => {
+    try {
+      if (quizDetails?.multipleAttempts) {
+        const updatedQuiz: Quiz = {
+          ...quizDetails,
+          userAttempts: Array(quizDetails.attempts).fill(currentUser?._id),
+        } as Quiz;
+        await quizClient.updateQuiz(updatedQuiz);
+        setQuizDetails(updatedQuiz);
+      } else {
+        const updatedQuiz: Quiz = {
+          ...quizDetails,
+          userAttempts: [currentUser?._id],
+        } as Quiz;
+        await quizClient.updateQuiz(updatedQuiz);
+        setQuizDetails(updatedQuiz);
+      }
+      setAttemptsLeft(0);
+      setCanAttempt(false);
+      navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
+    } catch (error) {
+      console.error('Error updating quiz attempts:', error);
+    }
   };
 
   const handleEditQuiz = () => {
@@ -350,7 +372,7 @@ export default function QuizPreview() {
                   <p>{question.text}</p>
                   {question.type === 'multiple-choice' && (
                     <div className='list-group'>
-                      {question.options?.map(option => (
+                      {question.options?.map((option) => (
                         <label
                           key={option}
                           className='list-group-item d-flex align-items-center'
@@ -400,7 +422,7 @@ export default function QuizPreview() {
                         type='text'
                         className='form-control'
                         value={answers[question._id] || ''}
-                        onChange={e =>
+                        onChange={(e) =>
                           handleAnswerChange(question._id, e.target.value)
                         }
                       />
@@ -457,19 +479,16 @@ export default function QuizPreview() {
             <div className='mt-5'>
               <h3> Score: {score}</h3>
               <ul className='list-group'>
-                {Object.entries(answers).map(
-                  ([questionId, answer]) => (
-                    <li key={questionId} className='list-group-item'>
-                      <strong>
-                        Question{' '}
-                        {questions.findIndex((q: any) => q._id === questionId) +
-                          1}
-                        :
-                      </strong>{' '}
-                      {answer}
-                    </li>
-                  )
-                )}
+                {Object.entries(answers).map(([questionId, answer]) => (
+                  <li key={questionId} className='list-group-item'>
+                    <strong>
+                      Question{' '}
+                      {questions.findIndex((q: any) => q._id === questionId) + 1}
+                      :
+                    </strong>{' '}
+                    {answer}
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -482,15 +501,12 @@ export default function QuizPreview() {
                     <li key={questionId} className='list-group-item'>
                       <strong>
                         Question{' '}
-                        {questions.findIndex((q: any) => q._id === questionId) +
-                          1}
+                        {questions.findIndex((q: any) => q._id === questionId) + 1}
                         :
                       </strong>{' '}
                       Your answer: {userAnswer}, Correct answer:{' '}
-                      {
-                        questions.find((q: any) => q._id === questionId)
-                          ?.answers[0]
-                      }
+                      {questions.find((q: any) => q._id === questionId)
+                        ?.answers[0]}
                     </li>
                   )
                 )}
