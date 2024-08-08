@@ -1,16 +1,106 @@
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import * as client from "../Courses/client";
 import "./index.css";
 
-export default function Dashboard(
-  { courses, course, setCourse, addNewCourse, deleteCourse, updateCourse }: {
-    courses: any[]; course: any; setCourse: (course: any) => void;
-    addNewCourse: () => void; deleteCourse: (courseId: any) => void;
-    updateCourse: () => void; }) {
+interface Course {
+  _id: string;
+  name: string;
+  description: string;
+  enrolled?: string[];
+}
 
+interface DashboardProps {
+  courses: Course[];
+  course: Course;
+  setCourse: (course: Course) => void;
+  addNewCourse: () => void;
+  deleteCourse: (courseId: string) => void;
+  updateCourse: () => void;
+}
+
+export default function Dashboard({
+  courses: initialCourses,
+  course,
+  setCourse,
+  addNewCourse,
+  deleteCourse,
+  updateCourse
+}: DashboardProps) {
   const currentUser = useSelector((state: any) => state.accountReducer.currentUser);
   const userRole = currentUser?.role;
+
+  const [courses, setCourses] = useState<any[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+
+  const fetchCourses = async () => {
+    try {
+      const fetchedCourses = await client.fetchAllCourses();
+      console.log("Fetching courses in own Dashboard:", JSON.stringify(fetchedCourses));
+      setCourses(fetchedCourses);
+    } catch (error: any) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && Array.isArray(courses)) {
+      const enrolled = courses.filter((c) => c.enrolled?.includes(currentUser._id));
+      setEnrolledCourses(enrolled);
+
+      if (userRole === 'STUDENT') {
+        const available = courses.filter((c) => !c.enrolled?.includes(currentUser._id));
+        setAvailableCourses(available);
+      }
+    }
+  }, [courses, currentUser, userRole]);
+
+  const handleEnroll = async (courseId: string) => {
+    try {
+      await client.enrollInCourse(courseId, currentUser._id);
+      fetchCourses();
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    }
+  };
+
+  const handleAddNewCourse = async () => {
+    try {
+      // Adding current user to enrolled array of the new course
+      const newCourse = { ...course, enrolled: [currentUser._id] };
+      await client.createCourse(newCourse);
+      fetchCourses();
+    } catch (error) {
+      console.error("Error adding new course:", error);
+    }
+  };
+
+  const handleUpdateCourse = async () => {
+    try {
+      await client.updateCourse(course);
+      fetchCourses();
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await client.deleteCourse(courseId);
+      fetchCourses();
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    }
+  };
+
+  console.log("Enrolled Courses: " + JSON.stringify(enrolledCourses));
+  console.log("Available Courses: " + JSON.stringify(availableCourses));
 
   return (
     <div id="wd-dashboard">
@@ -22,7 +112,7 @@ export default function Dashboard(
             New Course
             <button
               className="btn btn-warning float-end me-2"
-              onClick={updateCourse}
+              onClick={handleUpdateCourse}
               id="wd-update-course-click"
             >
               Update
@@ -30,7 +120,7 @@ export default function Dashboard(
             <button
               className="btn btn-primary float-end"
               id="wd-add-new-course-click"
-              onClick={addNewCourse}
+              onClick={handleAddNewCourse}
             >
               Add
             </button>
@@ -49,13 +139,11 @@ export default function Dashboard(
           <br />
         </>
       )}
-      <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2>
+      <h2 id="wd-dashboard-enrolled">Enrolled Courses ({enrolledCourses.length})</h2>
       <hr />
       <div id="wd-dashboard-courses" className="row">
-        {courses.map((course) => {
+        {enrolledCourses.map((course) => {
           const img2 = course._id.length > 5 ? "/images/reactjs.jpg" : `/images/${course._id}.jpg`;
-          console.log("The course id is:" + course._id);
-          console.log("Image is:" + img2);
           return (
             <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" key={course._id}>
               <Link to={`/Kanbas/Courses/${course._id}/Home`} className="text-decoration-none">
@@ -82,7 +170,7 @@ export default function Dashboard(
                         <button
                           onClick={(event) => {
                             event.preventDefault();
-                            deleteCourse(course._id);
+                            handleDeleteCourse(course._id);
                           }}
                           className="btn btn-danger float-end"
                           id="wd-delete-course-click"
@@ -108,6 +196,41 @@ export default function Dashboard(
           );
         })}
       </div>
+      {userRole === 'STUDENT' && (
+        <>
+          <h2 id="wd-dashboard-available">Courses Available to Enroll ({availableCourses.length})</h2>
+          <hr />
+          <div id="wd-dashboard-courses" className="row">
+            {availableCourses.map((course) => {
+              const img2 = course._id.length > 5 ? "/images/reactjs.jpg" : `/images/${course._id}.jpg`;
+              return (
+                <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" key={course._id}>
+                  <div className="card rounded-3 overflow-hidden">
+                    <img src={img2} height="160" alt={course.name} />
+                    <div className="card-body">
+                      <span
+                        className="wd-dashboard-course-link"
+                        style={{ textDecoration: "none", color: "navy", fontWeight: "bold" }}
+                      >
+                        {course.name}
+                      </span>
+                      <p
+                        className="wd-dashboard-course-title card-text"
+                        style={{ maxHeight: 53, overflow: "hidden" }}
+                      >
+                        {course.description}
+                      </p>
+                      <button className="btn btn-primary" onClick={() => handleEnroll(course._id)}>
+                        Enroll
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -19,3 +19,8 @@ export const updateCourse = async (course: any) => {
     const response = await axiosWithCredentials.put(`${COURSES_API}/${course._id}`, course);
     return response.data;
   };
+
+  export const enrollInCourse = (courseId: string, userId: string) => {
+    console.log("In web app, enroll in course methiod"+courseId);
+    return axios.post(`${COURSES_API}/${courseId}/enroll`, { userId });
+  };
