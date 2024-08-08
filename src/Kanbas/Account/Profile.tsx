@@ -5,7 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "./reducer";
 
 export default function Profile() {
-  const [profile, setProfile] = useState<any>({});
+  const [profile, setProfile] = useState<any>(() => {
+    const savedProfile = localStorage.getItem('profile');
+    return savedProfile ? JSON.parse(savedProfile) : {};
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector((state: any) => state.user);
@@ -13,6 +16,7 @@ export default function Profile() {
   const signout = async () => {
     await client.signout();
     dispatch(setCurrentUser(null));
+    localStorage.removeItem('profile'); // Clear profile from local storage on sign out
     navigate("/Kanbas/Account/Signin");
   };
 
@@ -20,37 +24,37 @@ export default function Profile() {
     try {
       const account = await client.profile();
       setProfile(account);
+      localStorage.setItem('profile', JSON.stringify(account)); // Save profile to local storage
       dispatch(setCurrentUser(account));
     } catch (err: any) {
-      navigate("/Kanbas/Account/Signin");
+      navigate('/Kanbas/Account/Signin');
     }
   };
 
   const saveProfile = async () => {
     try {
-      await client.updateProfile(profile._id, profile)
-      alert('Profile saved successfully')
+      await client.updateProfile(profile._id, profile);
+      localStorage.setItem('profile', JSON.stringify(profile)); // Update profile in local storage
+      alert('Profile saved successfully');
     } catch (err: any) {
-      console.error('Error saving profile:', err)
-      alert('Error saving profile')
+      console.error('Error saving profile:', err);
+      alert('Error saving profile');
     }
-  }
-
+  };
 
   useEffect(() => {
-    if (currentUser) {
-      setProfile(currentUser);
-    } else {
+    if (!currentUser) {
       fetchProfile();
+    } else {
+      setProfile(currentUser);
     }
   }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setProfile((prevProfile: any) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
+    const updatedProfile = { ...profile, [name]: value };
+    setProfile(updatedProfile);
+    localStorage.setItem('profile', JSON.stringify(updatedProfile)); // Save updated profile to local storage
   };
 
   return (
@@ -89,12 +93,12 @@ export default function Profile() {
             onChange={handleChange}
             placeholder="Last Name"
           />
-          <input
+          <input 
             className="wd-dob form-control mb-2"
             name="dob"
             value={profile.dob || ""}
             onChange={handleChange}
-            type="date"
+            type="Date"
           />
           <input
             className="wd-email form-control mb-2"
