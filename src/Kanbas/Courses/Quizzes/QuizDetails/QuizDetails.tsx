@@ -287,7 +287,6 @@ export default function QuizDetails () {
               className={`btn btn-lg me-1 ${
                 quiz.published ? 'btn-success' : 'btn-danger'
               }`}
-              onClick={togglePublish}
             >
               {quiz.published ? <FaPlus /> : <AiOutlineStop />}
               {quiz.published ? ' Published' : ' Unpublished'}
@@ -307,6 +306,13 @@ export default function QuizDetails () {
               <MdOutlineModeEditOutline />
               Edit
             </Link>
+            <button
+              className='btn btn-success ms-2'
+              onClick={togglePublish}
+              disabled={!quiz.title}
+            >
+              {quiz.published ? 'Unpublish' : 'Save and Publish'}
+            </button>
           </>
         )}
       </div>
