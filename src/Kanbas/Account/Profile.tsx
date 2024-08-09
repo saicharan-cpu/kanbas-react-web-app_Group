@@ -1,4 +1,3 @@
-
 import * as client from "./client";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "./reducer";
 
 export default function Profile() {
-  const [profile, setProfile] = useState<any>({});
+  const [profile, setProfile] = useState<any>(() => {
+    const savedProfile = localStorage.getItem('profile');
+    return savedProfile ? JSON.parse(savedProfile) : {};
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const currentUser = useSelector((state: any) => state.user);
@@ -14,6 +16,7 @@ export default function Profile() {
   const signout = async () => {
     await client.signout();
     dispatch(setCurrentUser(null));
+    localStorage.removeItem('profile'); // Clear profile from local storage on sign out
     navigate("/Kanbas/Account/Signin");
   };
 
@@ -21,29 +24,37 @@ export default function Profile() {
     try {
       const account = await client.profile();
       setProfile(account);
+      localStorage.setItem('profile', JSON.stringify(account)); // Save profile to local storage
       dispatch(setCurrentUser(account));
     } catch (err: any) {
-      navigate("/Kanbas/Account/Signin");
+      navigate('/Kanbas/Account/Signin');
+    }
+  };
+
+  const saveProfile = async () => {
+    try {
+      await client.updateProfile(profile._id, profile);
+      localStorage.setItem('profile', JSON.stringify(profile)); // Update profile in local storage
+      alert('Profile saved successfully');
+    } catch (err: any) {
+      console.error('Error saving profile:', err);
+      alert('Error saving profile');
     }
   };
 
   useEffect(() => {
-    if (currentUser) {
-      setProfile(currentUser);
-    } else {
+    if (!currentUser) {
       fetchProfile();
+    } else {
+      setProfile(currentUser);
     }
   }, [currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setProfile((prevProfile: any) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
-    if (name === "role") {
-      dispatch(setCurrentUser({ ...currentUser, role: value }));
-    }
+    const updatedProfile = { ...profile, [name]: value };
+    setProfile(updatedProfile);
+    localStorage.setItem('profile', JSON.stringify(updatedProfile)); // Save updated profile to local storage
   };
 
   return (
@@ -52,44 +63,52 @@ export default function Profile() {
       {profile && (
         <div>
           <input
-            className="wd-username"
+            className="wd-username form-control mb-2"
             name="username"
             value={profile.username || ""}
             onChange={handleChange}
+            placeholder="Username"
+            disabled // Assuming username shouldn't be editable
           />
           <input
-            className="wd-password"
+            className="wd-password form-control mb-2"
             name="password"
+            type="password"
             value={profile.password || ""}
             onChange={handleChange}
+            placeholder="Password"
+            disabled // Assuming password isn't handled here
           />
           <input
-            className="wd-firstname"
+            className="wd-firstname form-control mb-2"
             name="firstName"
             value={profile.firstName || ""}
             onChange={handleChange}
+            placeholder="First Name"
           />
           <input
-            className="wd-lastname"
+            className="wd-lastname form-control mb-2"
             name="lastName"
             value={profile.lastName || ""}
             onChange={handleChange}
+            placeholder="Last Name"
           />
-          <input
-            className="wd-dob"
+          <input 
+            className="wd-dob form-control mb-2"
             name="dob"
             value={profile.dob || ""}
             onChange={handleChange}
-            type="date"
+            type="Date"
           />
           <input
-            className="wd-email"
+            className="wd-email form-control mb-2"
             name="email"
             value={profile.email || ""}
             onChange={handleChange}
+            placeholder="Email"
           />
           <select
-            className="wd-role"
+            className="wd-role form-control mb-2"
             name="role"
             value={profile.role || "USER"}
             onChange={handleChange}
@@ -99,7 +118,16 @@ export default function Profile() {
             <option value="FACULTY">Faculty</option>
             <option value="STUDENT">Student</option>
           </select>
-          <button onClick={signout} className="wd-signout-btn btn btn-danger w-100">
+          <button
+            onClick={saveProfile}
+            className="wd-save-btn btn btn-success w-100 mb-2"
+          >
+            Save Changes
+          </button>
+          <button
+            onClick={signout}
+            className="wd-signout-btn btn btn-danger w-100"
+          >
             Sign out
           </button>
         </div>
