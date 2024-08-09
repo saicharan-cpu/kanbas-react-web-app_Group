@@ -1,27 +1,18 @@
-import { BsGripVertical, BsPlus } from 'react-icons/bs';
-import {
-  FaCheckCircle,
-  FaPlus,
-  FaSearch,
-  FaTrash,
-  FaRegSmileWink,
-} from 'react-icons/fa';
-import { IoIosRocket } from 'react-icons/io';
-import { IoEllipsisVertical } from 'react-icons/io5';
-import { VscNotebook } from 'react-icons/vsc';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import './style.css';
 import { deleteQuizzes, setQuizzes } from './reducer';
 import * as client from './client';
-import { useEffect, useState, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AiOutlineStop } from 'react-icons/ai';
+import { BsGripVertical } from 'react-icons/bs';
+import { FaCheckCircle, FaPlus, FaSearch, FaTrash, FaRegSmileWink } from 'react-icons/fa';
+import { IoEllipsisVertical, IoRocket } from 'react-icons/io5';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import * as questionClient from './QuestionClient';
 import * as answerClient from './AnswerClient';
-import * as quizClient from './client';
 
 const defaultDate = new Date().toISOString().split('T')[0];
 
@@ -33,7 +24,7 @@ interface Question {
 
 interface Answer {
   questionId: string;
-  answers: string;
+  answers: string[];
 }
 
 interface QuizDetails {
@@ -41,14 +32,30 @@ interface QuizDetails {
   numQuestions: number;
 }
 
-export default function Quiz() {
-  const { cid } = useParams();
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return format(date, "MMM d 'at' h a");
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+};
+
+export default function QuizList() {
+  const { cid } = useParams<{ cid: string }>();
   const dispatch = useDispatch();
   const quizzes = useSelector((state: any) =>
     state.quizzesReducer.quizzes.filter((quiz: any) => quiz.course === cid)
   );
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const userRole = currentUser.role;
+  const userRole = currentUser?.role;
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({});
+  const [searchInput, setSearchInput] = useState('');
+  const [quizDetailsMap, setQuizDetailsMap] = useState<{ [key: string]: QuizDetails }>({});
 
   const fetchQuizzes = useCallback(async () => {
     try {
@@ -63,40 +70,10 @@ export default function Quiz() {
     fetchQuizzes();
   }, [fetchQuizzes]);
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
-  const [showPopup, setShowPopup] = useState<{ [key: string]: boolean }>({});
-  const [searchInput, setSearchInput] = useState('');
-  const [quizDetailsMap, setQuizDetailsMap] = useState<{ [key: string]: QuizDetails }>({});
-  const popupRef = useRef<HTMLDivElement | null>(null);
-
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-      setShowPopup({});
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [handleClickOutside]);
-
   const handleDeleteClick = (quizId: string) => {
     setSelectedQuizId(quizId);
     setShowModal(true);
     setShowPopup({});
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return format(date, "MMM d 'at' h a");
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return dateString;
-    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -105,7 +82,7 @@ export default function Quiz() {
       dispatch(deleteQuizzes(selectedQuizId));
       setShowModal(false);
       setSelectedQuizId(null);
-      fetchQuizzes(); // Fetch quizzes after deletion
+      fetchQuizzes(); // Refresh quizzes after deletion
     }
   };
 
@@ -126,7 +103,7 @@ export default function Quiz() {
     try {
       await client.updateQuiz(updatedQuiz);
       setShowPopup({});
-      fetchQuizzes(); // Fetch quizzes after publish/unpublish
+      fetchQuizzes(); // Refresh quizzes after publish/unpublish
     } catch (error) {
       console.error('Error updating quiz:', error);
     }
@@ -161,19 +138,25 @@ export default function Quiz() {
     let newScore = 0;
     questions.forEach((question) => {
       const userAnswer = userAnswers.find((answer) => answer.questionId === question._id);
-      if (userAnswer && userAnswer.answers === question.answers[0]) {
+      if (
+        userAnswer &&
+        question.answers.every((correctAnswer, index) => userAnswer.answers[index] === correctAnswer)
+      ) {
         newScore += question.points;
       }
     });
     return newScore;
   }, []);
 
-  const getQuizDetails = useCallback(async (quizId: string): Promise<QuizDetails> => {
-    const questions = await questionClient.findAllQuestionsByQuizId(quizId);
-    const answers = await fetchUserAnswers(questions);
-    const score = calculateScore(questions, answers);
-    return { score, numQuestions: questions.length };
-  }, [fetchUserAnswers, calculateScore]);
+  const getQuizDetails = useCallback(
+    async (quizId: string): Promise<QuizDetails> => {
+      const questions = await questionClient.findAllQuestionsByQuizId(quizId);
+      const answers = await fetchUserAnswers(questions);
+      const score = calculateScore(questions, answers);
+      return { score, numQuestions: questions.length };
+    },
+    [fetchUserAnswers, calculateScore]
+  );
 
   const fetchQuizDetails = async (quizId: string) => {
     const details = await getQuizDetails(quizId);
@@ -280,7 +263,7 @@ export default function Quiz() {
                   <div className='d-flex align-items-center'>
                     <div className='icons-wrapper'>
                       <BsGripVertical className='me-2 fs-3 icon-color' />
-                      <IoIosRocket className='me-2 fs-5 icon-color' />
+                      <IoRocket className='me-2 fs-5 icon-color' />
                     </div>
                     <div className='flex-grow-1'>
                       {isStudentRestricted ? (

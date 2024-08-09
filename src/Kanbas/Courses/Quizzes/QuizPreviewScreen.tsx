@@ -19,7 +19,7 @@ interface Question {
 }
 
 interface Answers {
-  [key: string]: string;
+  [key: string]: string | string[];
 }
 
 interface Quiz {
@@ -44,7 +44,7 @@ export default function QuizPreview() {
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
   const [scores, setScores] = useState<number[]>([]);
   const [incorrectAnswers, setIncorrectAnswers] = useState<{
-    [key: string]: string;
+    [key: string]: string[];
   }>({});
   const [canAttempt, setCanAttempt] = useState<boolean>(true);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
@@ -121,7 +121,19 @@ export default function QuizPreview() {
     }
   }, [timeLeft, canAttempt, submitCount]);
 
-  const handleAnswerChange = (questionId: string, answer: string) => {
+  const handleAnswerChange = (questionId: string, index: number, answer: string) => {
+    setAnswers((prevAnswers) => {
+      const updatedAnswers = { ...prevAnswers };
+      if (Array.isArray(updatedAnswers[questionId])) {
+        (updatedAnswers[questionId] as string[])[index] = answer;
+      } else {
+        updatedAnswers[questionId] = [answer];
+      }
+      return updatedAnswers;
+    });
+  };
+
+  const handleSimpleAnswerChange = (questionId: string, answer: string) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: answer,
@@ -136,43 +148,49 @@ export default function QuizPreview() {
 
     let newScore = 0;
     const incorrect: string[] = [];
-    const incorrectAns: { [key: string]: string } = {};
+    const incorrectAns: { [key: string]: string[] } = {};
     const answerDataArray: any[] = [];
 
     questions.forEach((question: Question) => {
-      if (answers[question._id] === question.answers[0]) {
+      const userAnswers = Array.isArray(answers[question._id])
+        ? (answers[question._id] as string[])
+        : [answers[question._id] as string];
+
+      let isCorrect = true;
+      question.answers.forEach((correctAnswer, index) => {
+        if (userAnswers[index] !== correctAnswer) {
+          isCorrect = false;
+        }
+      });
+
+      if (isCorrect) {
         newScore += question.points;
       } else {
         incorrect.push(question._id);
-        incorrectAns[question._id] = answers[question._id];
+        incorrectAns[question._id] = userAnswers;
       }
+
       const answerData = {
         userId: currentUser?._id,
         quizId: qid as string,
         questionId: question._id,
-        answer: answers[question._id],
+        answer: userAnswers,
         score: newScore,
         attemptNumber: submitCount + 1,
         submittedAt: new Date(),
       };
-      console.log('Answer Data:', answerData);
 
       answerDataArray.push(answerData);
     });
 
     try {
       for (const answerData of answerDataArray) {
-        console.log('Answer data for question :' + JSON.stringify(answerData));
         try {
           const existingAnswer = await answerClient.fetchAnswer(
             answerData.userId,
             answerData.questionId
           );
-          console.log(
-            'Answer data for question from db :' + JSON.stringify(existingAnswer)
-          );
           if (existingAnswer) {
-            console.log('Updating answers: ' + answerData);
             await answerClient.updateAnswer(
               answerData,
               answerData.questionId,
@@ -199,7 +217,6 @@ export default function QuizPreview() {
         }
       }
 
-      // Update quiz with user attempt
       const updatedQuiz = {
         ...quizDetails,
         userAttempts: [...(quizDetails?.userAttempts || []), currentUser?._id],
@@ -218,7 +235,6 @@ export default function QuizPreview() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     setSubmitCount((prevCount) => prevCount + 1);
-    console.log('Quiz submitted successfully:', answers, 'Score:', newScore);
 
     setTimeLeft(60);
   };
@@ -382,7 +398,7 @@ export default function QuizPreview() {
                             name={`question-${question._id}`}
                             value={option}
                             checked={answers[question._id] === option}
-                            onChange={() => handleAnswerChange(question._id, option)}
+                            onChange={() => handleSimpleAnswerChange(question._id, option)}
                             className='me-2'
                           />
                           {option}
@@ -398,7 +414,7 @@ export default function QuizPreview() {
                           name={`question-${question._id}`}
                           value='true'
                           checked={answers[question._id] === 'true'}
-                          onChange={() => handleAnswerChange(question._id, 'true')}
+                          onChange={() => handleSimpleAnswerChange(question._id, 'true')}
                           className='me-2'
                         />
                         True
@@ -409,7 +425,7 @@ export default function QuizPreview() {
                           name={`question-${question._id}`}
                           value='false'
                           checked={answers[question._id] === 'false'}
-                          onChange={() => handleAnswerChange(question._id, 'false')}
+                          onChange={() => handleSimpleAnswerChange(question._id, 'false')}
                           className='me-2'
                         />
                         False
@@ -418,14 +434,21 @@ export default function QuizPreview() {
                   )}
                   {question.type === 'fill-in-the-blank' && (
                     <div className='mb-3'>
-                      <input
-                        type='text'
-                        className='form-control'
-                        value={answers[question._id] || ''}
-                        onChange={(e) =>
-                          handleAnswerChange(question._id, e.target.value)
-                        }
-                      />
+                      {question.answers.map((_, index) => (
+                        <input
+                          key={index}
+                          type='text'
+                          className='form-control my-2'
+                          value={
+                            Array.isArray(answers[question._id])
+                              ? (answers[question._id] as string[])[index] || ''
+                              : ''
+                          }
+                          onChange={(e) =>
+                            handleAnswerChange(question._id, index, e.target.value)
+                          }
+                        />
+                      ))}
                     </div>
                   )}
                 </div>
@@ -479,14 +502,16 @@ export default function QuizPreview() {
             <div className='mt-5'>
               <h3> Score: {score}</h3>
               <ul className='list-group'>
-                {Object.entries(answers).map(([questionId, answer]) => (
+                {Object.entries(answers).map(([questionId, userAnswer]) => (
                   <li key={questionId} className='list-group-item'>
                     <strong>
                       Question{' '}
                       {questions.findIndex((q: any) => q._id === questionId) + 1}
                       :
                     </strong>{' '}
-                    {answer}
+                    {Array.isArray(userAnswer)
+                      ? userAnswer.map((answer, i) => <div key={i}>{answer}</div>)
+                      : userAnswer}
                   </li>
                 ))}
               </ul>
@@ -497,16 +522,27 @@ export default function QuizPreview() {
               <h3>Incorrect Answers and Correct Answers:</h3>
               <ul className='list-group'>
                 {Object.entries(incorrectAnswers).map(
-                  ([questionId, userAnswer]) => (
+                  ([questionId, userAnswers]) => (
                     <li key={questionId} className='list-group-item'>
                       <strong>
                         Question{' '}
                         {questions.findIndex((q: any) => q._id === questionId) + 1}
                         :
                       </strong>{' '}
-                      Your answer: {userAnswer}, Correct answer:{' '}
-                      {questions.find((q: any) => q._id === questionId)
-                        ?.answers[0]}
+                      Your answers:{' '}
+                      <ul>
+                        {userAnswers.map((answer, i) => (
+                          <li key={i}>{answer}</li>
+                        ))}
+                      </ul>
+                      Correct answers:
+                      <ul>
+                        {questions
+                          .find((q: any) => q._id === questionId)
+                          ?.answers.map((correctAnswer: string, i: number) => (
+                            <li key={i}>{correctAnswer}</li>
+                          ))}
+                      </ul>
                     </li>
                   )
                 )}
