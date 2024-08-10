@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import * as questionClient from './QuestionClient';
-import * as answerClient from './AnswerClient';
-import * as quizClient from './client';
+import * as questionService from './QuestionClient';
+import * as answerService from './AnswerClient';
+import * as quizService from './client';
 import { setQuestions as setQuestionsAction } from './QuestionsReducer';
 import { addAnswer, updateAnswer } from './AnswerReducer';
 import './style.css';
@@ -37,16 +37,16 @@ export default function QuizPreview() {
   const [answers, setAnswers] = useState<Answers>({});
   const [score, setScore] = useState<number | null>(null);
   const [incorrectQuestions, setIncorrectQuestions] = useState<string[]>([]);
-  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
-  const [quizDetails, setQuizDetails] = useState<Quiz | null>(null);
-  const [submitCount, setSubmitCount] = useState<number>(0);
-  const [timeLeft, setTimeLeft] = useState<number>(60);
-  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-  const [scores, setScores] = useState<number[]>([]);
-  const [incorrectAnswers, setIncorrectAnswers] = useState<{
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [quizInfo, setQuizInfo] = useState<Quiz | null>(null);
+  const [submissionCount, setSubmissionCount] = useState<number>(0);
+  const [timeRemaining, setTimeRemaining] = useState<number>(60);
+  const [activeTimer, setActiveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [allScores, setAllScores] = useState<number[]>([]);
+  const [wrongAnswers, setWrongAnswers] = useState<{
     [key: string]: string[];
   }>({});
-  const [canAttempt, setCanAttempt] = useState<boolean>(true);
+  const [isEligibleToAttempt, setIsEligibleToAttempt] = useState<boolean>(true);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const questions = useSelector((state: any) =>
     state.questionsReducer.questions.filter(
@@ -54,12 +54,12 @@ export default function QuizPreview() {
     )
   );
 
-  const fetchQuestions = async () => {
+  const loadQuestions = async () => {
     try {
-      const fetchedQuestions = await questionClient.findAllQuestionsByQuizId(
+      const retrievedQuestions = await questionService.findAllQuestionsByQuizId(
         qid as string
       );
-      const questionsWithOptions = fetchedQuestions.map(
+      const formattedQuestions = retrievedQuestions.map(
         (question: Question) => {
           if (
             question.type === 'true-false' &&
@@ -70,58 +70,58 @@ export default function QuizPreview() {
           return question;
         }
       );
-      dispatch(setQuestionsAction(questionsWithOptions));
+      dispatch(setQuestionsAction(formattedQuestions));
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      console.error('Error loading questions:', error);
     }
   };
 
-  const fetchQuizDetails = async () => {
+  const loadQuizInfo = async () => {
     try {
-      const fetchedQuizDetails = await quizClient.findQuiz(
+      const retrievedQuizInfo = await quizService.findQuiz(
         cid as string,
         qid as string
       );
-      setQuizDetails(fetchedQuizDetails);
-      const attemptsCheck = await quizClient.checkAttempts(qid as string, currentUser?._id);
-      setCanAttempt(attemptsCheck.canAttempt);
-      if (fetchedQuizDetails.multipleAttempts) {
-        setAttemptsLeft(fetchedQuizDetails.attempts - attemptsCheck.attempts);
+      setQuizInfo(retrievedQuizInfo);
+      const attemptsStatus = await quizService.checkAttempts(qid as string, currentUser?._id);
+      setIsEligibleToAttempt(attemptsStatus.canAttempt);
+      if (retrievedQuizInfo.multipleAttempts) {
+        setRemainingAttempts(retrievedQuizInfo.attempts - attemptsStatus.attempts);
       } else {
-        setAttemptsLeft(1 - attemptsCheck.attempts);
+        setRemainingAttempts(1 - attemptsStatus.attempts);
       }
-      if (fetchedQuizDetails.timeLimit) {
-        setTimeLeft(fetchedQuizDetails.timeLimit * 60);
+      if (retrievedQuizInfo.timeLimit) {
+        setTimeRemaining(retrievedQuizInfo.timeLimit * 60);
       }
     } catch (error) {
-      console.error('Error fetching quiz details:', error);
+      console.error('Error loading quiz details:', error);
     }
   };
 
-  const formatTime = (seconds: number) => {
+  const formatTimeDisplay = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   useEffect(() => {
-    fetchQuestions();
-    fetchQuizDetails();
+    loadQuestions();
+    loadQuizInfo();
   }, [qid]);
 
   useEffect(() => {
-    if (timeLeft > 0 && canAttempt && submitCount === 0) {
-      const timerInterval = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1);
+    if (timeRemaining > 0 && isEligibleToAttempt && submissionCount === 0) {
+      const intervalId = setInterval(() => {
+        setTimeRemaining((prevTime) => prevTime - 1);
       }, 1000);
-      setTimer(timerInterval);
-      return () => clearInterval(timerInterval);
-    } else if (timeLeft === 0) {
-      handleSubmit();
+      setActiveTimer(intervalId);
+      return () => clearInterval(intervalId);
+    } else if (timeRemaining === 0) {
+      handleSubmission();
     }
-  }, [timeLeft, canAttempt, submitCount]);
+  }, [timeRemaining, isEligibleToAttempt, submissionCount]);
 
-  const handleAnswerChange = (questionId: string, index: number, answer: string) => {
+  const handleAnswerUpdate = (questionId: string, index: number, answer: string) => {
     setAnswers((prevAnswers) => {
       const updatedAnswers = { ...prevAnswers };
       if (Array.isArray(updatedAnswers[questionId])) {
@@ -133,23 +133,23 @@ export default function QuizPreview() {
     });
   };
 
-  const handleSimpleAnswerChange = (questionId: string, answer: string) => {
+  const handleSimpleAnswerUpdate = (questionId: string, answer: string) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: answer,
     }));
   };
 
-  const handleSubmit = async () => {
-    if (timer) {
-      clearInterval(timer);
-      setTimer(null);
+  const handleSubmission = async () => {
+    if (activeTimer) {
+      clearInterval(activeTimer);
+      setActiveTimer(null);
     }
 
-    let newScore = 0;
-    const incorrect: string[] = [];
-    const incorrectAns: { [key: string]: string[] } = {};
-    const answerDataArray: any[] = [];
+    let calculatedScore = 0;
+    const incorrectList: string[] = [];
+    const incorrectAnswerMap: { [key: string]: string[] } = {};
+    const answersPayload: any[] = [];
 
     questions.forEach((question: Question) => {
       const userAnswers = Array.isArray(answers[question._id])
@@ -164,10 +164,10 @@ export default function QuizPreview() {
       });
 
       if (isCorrect) {
-        newScore += question.points;
+        calculatedScore += question.points;
       } else {
-        incorrect.push(question._id);
-        incorrectAns[question._id] = userAnswers;
+        incorrectList.push(question._id);
+        incorrectAnswerMap[question._id] = userAnswers;
       }
 
       const answerData = {
@@ -175,30 +175,30 @@ export default function QuizPreview() {
         quizId: qid as string,
         questionId: question._id,
         answer: userAnswers,
-        score: newScore,
-        attemptNumber: submitCount + 1,
+        score: calculatedScore,
+        attemptNumber: submissionCount + 1,
         submittedAt: new Date(),
       };
 
-      answerDataArray.push(answerData);
+      answersPayload.push(answerData);
     });
 
     try {
-      for (const answerData of answerDataArray) {
+      for (const answerData of answersPayload) {
         try {
-          const existingAnswer = await answerClient.fetchAnswer(
+          const existingAnswer = await answerService.fetchAnswer(
             answerData.userId,
             answerData.questionId
           );
           if (existingAnswer) {
-            await answerClient.updateAnswer(
+            await answerService.updateAnswer(
               answerData,
               answerData.questionId,
               currentUser._id
             );
             dispatch(updateAnswer(answerData));
           } else {
-            await answerClient.createAnswer(
+            await answerService.createAnswer(
               answerData.questionId as string,
               answerData as any
             );
@@ -206,7 +206,7 @@ export default function QuizPreview() {
           }
         } catch (error: any) {
           if (error.response && error.response.status === 404) {
-            await answerClient.createAnswer(
+            await answerService.createAnswer(
               answerData.questionId as string,
               answerData as any
             );
@@ -218,100 +218,90 @@ export default function QuizPreview() {
       }
 
       const updatedQuiz = {
-        ...quizDetails,
-        userAttempts: [...(quizDetails?.userAttempts || []), currentUser?._id],
+        ...quizInfo,
+        userAttempts: [...(quizInfo?.userAttempts || []), currentUser?._id],
       } as Quiz;
-      await quizClient.updateQuiz(updatedQuiz);
+      await quizService.updateQuiz(updatedQuiz);
 
     } catch (error) {
-      console.error('Error storing answers:', error);
+      console.error('Error saving answers:', error);
     }
 
-    setScore(newScore);
-    setScores([...scores, newScore]);
-    setIncorrectQuestions(incorrect);
-    setIncorrectAnswers(incorrectAns);
+    setScore(calculatedScore);
+    setAllScores([...allScores, calculatedScore]);
+    setIncorrectQuestions(incorrectList);
+    setWrongAnswers(incorrectAnswerMap);
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    setSubmitCount((prevCount) => prevCount + 1);
+    setSubmissionCount((prevCount) => prevCount + 1);
 
-    setTimeLeft(60);
+    setTimeRemaining(60);
   };
 
-  const handleRetakeQuiz = () => {
+  const handleRetryQuiz = () => {
     setAnswers({});
     setScore(null);
     setIncorrectQuestions([]);
-    setTimeLeft(60);
+    setTimeRemaining(60);
   };
 
-  const getScoreComment = (percentage: number) => {
-    if (percentage === 100) {
-      return "Perfect score! You're a genius!";
-    } else if (percentage >= 75) {
-      return 'Great job! Almost perfect!';
-    } else if (percentage >= 50) {
-      return "Not bad! You're getting there!";
-    } else if (percentage >= 25) {
-      return 'You can do better! Keep trying!';
-    } else {
-      return 'Well, at least you tried. Better luck next time!';
-    }
+  const generateScoreComment = (percentage: number) => {
+      return 'Here is your Score!!!';
   };
 
-  const handleViewResults = async () => {
+  const handleResultsView = async () => {
     try {
-      if (quizDetails?.multipleAttempts) {
+      if (quizInfo?.multipleAttempts) {
         const updatedQuiz: Quiz = {
-          ...quizDetails,
-          userAttempts: Array(quizDetails.attempts).fill(currentUser?._id),
+          ...quizInfo,
+          userAttempts: Array(quizInfo.attempts).fill(currentUser?._id),
         } as Quiz;
-        await quizClient.updateQuiz(updatedQuiz);
-        setQuizDetails(updatedQuiz);
+        await quizService.updateQuiz(updatedQuiz);
+        setQuizInfo(updatedQuiz);
       } else {
         const updatedQuiz: Quiz = {
-          ...quizDetails,
+          ...quizInfo,
           userAttempts: [currentUser?._id],
         } as Quiz;
-        await quizClient.updateQuiz(updatedQuiz);
-        setQuizDetails(updatedQuiz);
+        await quizService.updateQuiz(updatedQuiz);
+        setQuizInfo(updatedQuiz);
       }
-      setAttemptsLeft(0);
-      setCanAttempt(false);
+      setRemainingAttempts(0);
+      setIsEligibleToAttempt(false);
       navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/results`);
     } catch (error) {
       console.error('Error updating quiz attempts:', error);
     }
   };
 
-  const handleEditQuiz = () => {
+  const handleQuizEdit = () => {
     navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/editor`);
   };
 
-  const totalPoints = questions.reduce(
+  const totalPointsAvailable = questions.reduce(
     (acc: number, q: Question) => acc + q.points,
     0
   );
-  const percentageScore = score !== null ? (score / totalPoints) * 100 : 0;
-  const scoreComment = getScoreComment(percentageScore);
+  const percentageScore = score !== null ? (score / totalPointsAvailable) * 100 : 0;
+  const scoreCommentary = generateScoreComment(percentageScore);
 
   useEffect(() => {
-    if (quizDetails) {
-      if (!quizDetails.multipleAttempts) {
-        setAttemptsLeft(1);
-        setSubmitCount(0);
-        localStorage.setItem(`quiz-${qid}-attemptsLeft`, '1');
+    if (quizInfo) {
+      if (!quizInfo.multipleAttempts) {
+        setRemainingAttempts(1);
+        setSubmissionCount(0);
+        localStorage.setItem(`quiz-${qid}-remainingAttempts`, '1');
       } else {
-        const savedAttemptsLeft = localStorage.getItem(
-          `quiz-${qid}-attemptsLeft`
+        const storedAttempts = localStorage.getItem(
+          `quiz-${qid}-remainingAttempts`
         );
-        setAttemptsLeft(
-          savedAttemptsLeft ? parseInt(savedAttemptsLeft) : quizDetails.attempts
+        setRemainingAttempts(
+          storedAttempts ? parseInt(storedAttempts) : quizInfo.attempts
         );
       }
     }
-  }, [quizDetails?.multipleAttempts]);
+  }, [quizInfo?.multipleAttempts]);
 
   return (
     <div className='container mt-5'>
@@ -324,37 +314,37 @@ export default function QuizPreview() {
             <div className='card-body'>
               <h1 className='display-4'>{score}</h1>
               <p className='card-text'>
-                You scored {score} points out of a possible {totalPoints}.<br />
+                You scored {score} points out of a possible {totalPointsAvailable}.<br />
               </p>
             </div>
-            <div className='card-footer text-muted'>{scoreComment}</div>
+            <div className='card-footer text-muted'>{scoreCommentary}</div>
           </div>
         </div>
       )}
-      <h1>{quizDetails?.title}</h1>
-      {!canAttempt ? (
+      <h1>{quizInfo?.title}</h1>
+      {!isEligibleToAttempt ? (
         <div className='alert alert-warning' role='alert'>
           Unable to take the quiz. You have used all your attempts.
           <button
             className='btn btn-danger view-results-btn mt-3'
-            onClick={handleViewResults}
+            onClick={handleResultsView}
           >
             View Results
           </button>
         </div>
       ) : (
-        attemptsLeft !== null && attemptsLeft > 0 && submitCount === 0 ? (
+        remainingAttempts !== null && remainingAttempts > 0 && submissionCount === 0 ? (
           <>
-            {submitCount <
-              (quizDetails?.multipleAttempts ? quizDetails.attempts : 1) && (
+            {submissionCount <
+              (quizInfo?.multipleAttempts ? quizInfo.attempts : 1) && (
                 <div className='alert alert-info' role='alert'>
-                  Time left: {formatTime(timeLeft)}
+                  Time left: {formatTimeDisplay(timeRemaining)}
                 </div>
               )}
-            {quizDetails?.multipleAttempts ? (
-              attemptsLeft > 0 ? (
+            {quizInfo?.multipleAttempts ? (
+              remainingAttempts > 0 ? (
                 <div className='alert alert-warning' role='alert'>
-                  This quiz allows multiple attempts. Attempts left: {attemptsLeft}
+                  This quiz allows multiple attempts. Attempts left: {remainingAttempts}
                 </div>
               ) : (
                 <div className='alert alert-warning' role='alert'>
@@ -398,7 +388,7 @@ export default function QuizPreview() {
                             name={`question-${question._id}`}
                             value={option}
                             checked={answers[question._id] === option}
-                            onChange={() => handleSimpleAnswerChange(question._id, option)}
+                            onChange={() => handleSimpleAnswerUpdate(question._id, option)}
                             className='me-2'
                           />
                           {option}
@@ -414,7 +404,7 @@ export default function QuizPreview() {
                           name={`question-${question._id}`}
                           value='true'
                           checked={answers[question._id] === 'true'}
-                          onChange={() => handleSimpleAnswerChange(question._id, 'true')}
+                          onChange={() => handleSimpleAnswerUpdate(question._id, 'true')}
                           className='me-2'
                         />
                         True
@@ -425,7 +415,7 @@ export default function QuizPreview() {
                           name={`question-${question._id}`}
                           value='false'
                           checked={answers[question._id] === 'false'}
-                          onChange={() => handleSimpleAnswerChange(question._id, 'false')}
+                          onChange={() => handleSimpleAnswerUpdate(question._id, 'false')}
                           className='me-2'
                         />
                         False
@@ -445,7 +435,7 @@ export default function QuizPreview() {
                               : ''
                           }
                           onChange={(e) =>
-                            handleAnswerChange(question._id, index, e.target.value)
+                            handleAnswerUpdate(question._id, index, e.target.value)
                           }
                         />
                       ))}
@@ -456,29 +446,29 @@ export default function QuizPreview() {
             ))}
             <div className='d-flex justify-content-between mt-3'>
               {currentUser?.role !== 'STUDENT' && (
-                <button onClick={handleEditQuiz} className='btn btn-secondary'>
+                <button onClick={handleQuizEdit} className='btn btn-secondary'>
                   Keep Editing This Quiz
                 </button>
               )}
-              {(quizDetails?.multipleAttempts
-                  ? submitCount < quizDetails.attempts
-                  : submitCount < 1) && timeLeft > 0 ? (
-                <button onClick={handleSubmit} className='btn btn-primary'>
+              {(quizInfo?.multipleAttempts
+                  ? submissionCount < quizInfo.attempts
+                  : submissionCount < 1) && timeRemaining > 0 ? (
+                <button onClick={handleSubmission} className='btn btn-primary'>
                   Submit Quiz
                 </button>
               ) : (
                 <button
-                  onClick={handleRetakeQuiz}
+                  onClick={handleRetryQuiz}
                   className='btn btn-warning'
                   disabled
                 >
                   You Can't Retake Quiz (Attempts left: 0)
                 </button>
               )}
-              {submitCount > 0 && (
+              {submissionCount > 0 && (
                 <button
                   className='btn btn-danger view-results-btn'
-                  onClick={handleViewResults}
+                  onClick={handleResultsView}
                 >
                   View Results
                 </button>
@@ -489,7 +479,7 @@ export default function QuizPreview() {
           <div className='alert alert-warning' role='alert'>
             <button
               className='btn btn-danger view-results-btn mt-3'
-              onClick={handleViewResults}
+              onClick={handleResultsView}
             >
               View Results
             </button>
@@ -517,11 +507,11 @@ export default function QuizPreview() {
               </ul>
             </div>
           )}
-          {Object.keys(incorrectAnswers).length > 0 && (
+          {Object.keys(wrongAnswers).length > 0 && (
             <div className='mt-5'>
               <h3>Incorrect Answers and Correct Answers:</h3>
               <ul className='list-group'>
-                {Object.entries(incorrectAnswers).map(
+                {Object.entries(wrongAnswers).map(
                   ([questionId, userAnswers]) => (
                     <li key={questionId} className='list-group-item'>
                       <strong>

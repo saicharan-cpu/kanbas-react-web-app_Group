@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as questionClient from './QuestionClient';
-import * as answerClient from './AnswerClient';
-import * as quizClient from './client';
-import './style.css';
 import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
+import * as questionService from './QuestionClient';
+import * as answerService from './AnswerClient';
+import * as quizService from './client';
+import './style.css';
 
 interface Question {
   title: string;
@@ -28,12 +28,11 @@ interface Quiz {
   title: string;
 }
 
-const fetchAnswerForQuestion = async (userId: string, questionId: string) => {
-  const response = await answerClient.fetchAnswer(userId, questionId);
+const getUserAnswerForQuestion = async (userId: string, questionId: string) => {
+  const response = await answerService.fetchAnswer(userId, questionId);
   return response;
 };
 
-// Memoized selector example
 const selectCurrentUser = createSelector(
   (state: any) => state.accountReducer,
   (accountReducer) => accountReducer.currentUser
@@ -47,92 +46,79 @@ export default function QuizResults() {
   const [quizDetails, setQuizDetails] = useState<Quiz | null>(null);
   const currentUser = useSelector(selectCurrentUser);
 
-  const fetchQuestions = async () => {
+  const loadQuestions = async () => {
     try {
-      const fetchedQuestions = await questionClient.findAllQuestionsByQuizId(
-        qid as string
-      );
-      setQuestions(fetchedQuestions);
+      const retrievedQuestions = await questionService.findAllQuestionsByQuizId(qid as string);
+      setQuestions(retrievedQuestions);
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      console.error('Error retrieving questions:', error);
     }
   };
 
-  const fetchQuizDetails = async () => {
+  const loadQuizDetails = async () => {
     try {
-      const fetchedQuizDetails = await quizClient.findQuiz(
-        cid as string,
-        qid as string
-      );
-      setQuizDetails(fetchedQuizDetails);
+      const retrievedQuizDetails = await quizService.findQuiz(cid as string, qid as string);
+      setQuizDetails(retrievedQuizDetails);
     } catch (error) {
-      console.error('Error fetching quiz details:', error);
+      console.error('Error retrieving quiz details:', error);
     }
   };
 
-  const fetchUserAnswers = async () => {
+  const loadUserAnswers = async () => {
     try {
       const answers = await Promise.all(
         questions.map(async (question) => {
-          const answer = await fetchAnswerForQuestion(
-            currentUser?._id,
-            question._id
-          );
-          console.log('in fetchUserAnswers', answer.answers);
+          const answer = await getUserAnswerForQuestion(currentUser?._id, question._id);
           return { ...answer, questionId: question._id };
         })
       );
       setUserAnswers(answers);
     } catch (error) {
-      console.error('Error fetching user answers:', error);
+      console.error('Error retrieving user answers:', error);
     }
   };
 
   useEffect(() => {
-    fetchQuestions();
-    fetchQuizDetails();
+    loadQuestions();
+    loadQuizDetails();
   }, [qid]);
 
   useEffect(() => {
     if (questions.length > 0) {
-      fetchUserAnswers();
+      loadUserAnswers();
     }
   }, [questions]);
 
-  const calculateScore = () => {
-    let newScore = 0;
+  const computeScore = () => {
+    let calculatedScore = 0;
     questions.forEach((question: Question) => {
-      const userAnswer = userAnswers.find(
-        (answer: Answer) => answer.questionId === question._id
-      );
+      const userAnswer = userAnswers.find((answer: Answer) => answer.questionId === question._id);
       if (userAnswer) {
-        const isCorrect = question.answers.every(
+        const isAnswerCorrect = question.answers.every(
           (correctAnswer, index) => userAnswer.answers[index] === correctAnswer
         );
-        if (isCorrect) {
-          newScore += question.points;
+        if (isAnswerCorrect) {
+          calculatedScore += question.points;
         }
       }
     });
-    setScore(newScore);
+    setScore(calculatedScore);
   };
 
   useEffect(() => {
     if (questions.length > 0 && userAnswers.length > 0) {
-      calculateScore();
+      computeScore();
     }
   }, [questions, userAnswers]);
 
   return (
     <div className='container mt-4'>
-      <b>You cannot take this quiz anymore as you have seen the results.</b>
+      <b>You cannot retake this quiz since you have viewed the results.</b>
       <br />
       <h2 className='quiz-title text-center'>{quizDetails?.title}</h2>
       <h3 className='score text-center'>Your Score: {score}</h3>
       {questions.map((question: Question) => {
-        const userAnswer = userAnswers.find(
-          (answer: Answer) => answer.questionId === question._id
-        );
+        const userAnswer = userAnswers.find((answer: Answer) => answer.questionId === question._id);
         const isCorrect =
           userAnswer &&
           question.answers.every(
