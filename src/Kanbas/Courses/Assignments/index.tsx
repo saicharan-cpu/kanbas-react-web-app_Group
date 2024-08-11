@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import { BsGripVertical, BsPlus, BsTrash } from 'react-icons/bs';
-import { TfiWrite } from "react-icons/tfi";
+import { PiNotePencilFill } from "react-icons/pi";
 import { BiSolidDownArrow } from "react-icons/bi";
 import { IoEllipsisVertical } from 'react-icons/io5';
 import LessonControlButtons from '../Modules/LessonControlButtons';
@@ -89,7 +89,7 @@ export default function Assignments() {
             <li key={assignment._id} className="wd-assignment-list-item d-flex align-items-center">
               <div><BsGripVertical className="me-2 fs-3" /></div>
               <div className="assignment-icon me-2">
-                <TfiWrite />
+                <PiNotePencilFill />
               </div>
               <div className="assignment-details flex-grow-1">
                 {userRole === 'FACULTY' ? (

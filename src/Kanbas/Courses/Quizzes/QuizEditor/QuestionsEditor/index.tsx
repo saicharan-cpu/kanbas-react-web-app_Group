@@ -214,7 +214,8 @@ export default function QuizQuestionEditor () {
           </div>
           <div className='card-body'>{renderEditor(question, index)}</div>
           <div className='d-flex justify-content-end m-3'>
-            <button type='button' className='btn btn-secondary me-2'>
+            <button type='button' className='btn btn-secondary me-2'
+            onClick={() => handleDeleteClick(question._id)} >
               Cancel
             </button>
             <button

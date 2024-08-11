@@ -72,7 +72,6 @@ export default function Dashboard({
 
   const handleAddNewCourse = async () => {
     try {
-      // Adding current user to enrolled array of the new course
       const newCourse = { ...course, enrolled: [currentUser._id] };
       await client.createCourse(newCourse);
       fetchCourses();
@@ -118,7 +117,7 @@ export default function Dashboard({
               Update
             </button>
             <button
-              className="btn btn-primary float-end"
+              className="btn btn-primary float-end me-2"
               id="wd-add-new-course-click"
               onClick={handleAddNewCourse}
             >
@@ -145,11 +144,11 @@ export default function Dashboard({
         {enrolledCourses.map((course) => {
           const img2 = course._id.length > 5 ? "/images/reactjs.jpg" : `/images/${course._id}.jpg`;
           return (
-            <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" key={course._id}>
+            <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" style={{ width: "300px" }} key={course._id}>
               <Link to={`/Kanbas/Courses/${course._id}/Home`} className="text-decoration-none">
                 <div className="card rounded-3 overflow-hidden">
-                  <img src={img2} height="160" alt={course.name} />
-                  <div className="card-body">
+                  <img src={img2} height="145" alt={course.name} />
+                  <div className="card-body" style={{width:"100%", height:"180px"}}>
                     <span
                       className="wd-dashboard-course-link"
                       style={{ textDecoration: "none", color: "navy", fontWeight: "bold" }}
@@ -158,7 +157,7 @@ export default function Dashboard({
                     </span>
                     <p
                       className="wd-dashboard-course-title card-text"
-                      style={{ maxHeight: 53, overflow: "hidden" }}
+                      style={{ maxHeight: 50, overflow: "hidden" }}
                     >
                       {course.description}
                     </p>
@@ -204,10 +203,10 @@ export default function Dashboard({
             {availableCourses.map((course) => {
               const img2 = course._id.length > 5 ? "/images/reactjs.jpg" : `/images/${course._id}.jpg`;
               return (
-                <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" key={course._id}>
+                <div className="wd-dashboard-course col-12 col-md-4 col-lg-2 col-xl-1" style={{ width: "350px" }} key={course._id}>
                   <div className="card rounded-3 overflow-hidden">
-                    <img src={img2} height="160" alt={course.name} />
-                    <div className="card-body">
+                    <img src={img2} height="145" alt={course.name} />
+                    <div className="card-body" style={{width:"100%", height:"180px"}}>
                       <span
                         className="wd-dashboard-course-link"
                         style={{ textDecoration: "none", color: "navy", fontWeight: "bold" }}
@@ -215,8 +214,8 @@ export default function Dashboard({
                         {course.name}
                       </span>
                       <p
-                        className="wd-dashboard-course-title card-text"
-                        style={{ maxHeight: 53, overflow: "hidden" }}
+                        className="wd-dashboard-course-title card-text" 
+                        style={{ maxHeight: 50, overflow: "hidden" }}
                       >
                         {course.description}
                       </p>

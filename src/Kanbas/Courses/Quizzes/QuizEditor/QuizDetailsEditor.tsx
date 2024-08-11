@@ -29,8 +29,8 @@ export default function QuizDetailsEditor () {
     availableDate: '',
     untilDate: '',
     points: '',
-    attempts: 1, // Default number of attempts
-    published: false // Default published state
+    attempts: 1, 
+    published: false 
 
   })
 
@@ -72,9 +72,8 @@ export default function QuizDetailsEditor () {
           availableDate: formatDateForInput(quiz.availableDate),
           untilDate: formatDateForInput(quiz.untilDate),
           points: quiz.points || '',
-          attempts: quiz.attempts || 1,  // Fetch number of attempts
-          published: quiz.published || false // Fetch published state
-
+          attempts: quiz.attempts || 1,  
+          published: quiz.published || false 
         })
       } catch (error) {
         console.error('Error fetching quizzes:', error)
@@ -432,15 +431,15 @@ export default function QuizDetailsEditor () {
             </button>
             <button
               type='button'
-              className='btn btn-danger'
-              onClick={() => handleSave(false)} // Save without publishing
+              className='btn btn-danger me-2'
+              onClick={() => handleSave(false)} 
             >
               Save
             </button>
             <button
               type='button'
               className='btn btn-success'
-              onClick={() => handleSave(true)} // Save and publish
+              onClick={() => handleSave(true)} 
             >
               Save and Publish
             </button>

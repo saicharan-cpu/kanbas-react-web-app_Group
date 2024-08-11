@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AiOutlineStop } from 'react-icons/ai';
 import { BsGripVertical } from 'react-icons/bs';
-import { FaCheckCircle, FaPlus, FaSearch, FaTrash, FaRegSmileWink } from 'react-icons/fa';
+import { FaCheckCircle, FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
 import { IoEllipsisVertical, IoRocket } from 'react-icons/io5';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import * as questionClient from './QuestionClient';
@@ -82,7 +82,7 @@ export default function QuizList() {
       dispatch(deleteQuizzes(selectedQuizId));
       setShowModal(false);
       setSelectedQuizId(null);
-      fetchQuizzes(); // Refresh quizzes after deletion
+      fetchQuizzes(); 
     }
   };
 
@@ -103,7 +103,7 @@ export default function QuizList() {
     try {
       await client.updateQuiz(updatedQuiz);
       setShowPopup({});
-      fetchQuizzes(); // Refresh quizzes after publish/unpublish
+      fetchQuizzes(); 
     } catch (error) {
       console.error('Error updating quiz:', error);
     }
@@ -170,8 +170,8 @@ export default function QuizList() {
     userRole === 'STUDENT'
       ? quizzes.filter((quiz: any) => quiz.published)
       : quizzes.filter((quiz: any) =>
-          quiz.title.toLowerCase().includes(searchInput.toLowerCase())
-        );
+        quiz.title.toLowerCase().includes(searchInput.toLowerCase())
+      );
 
   const currentDate = new Date();
 
@@ -185,7 +185,7 @@ export default function QuizList() {
           <input
             id='wd-search-quizzes'
             className='form-control border-start-0'
-            placeholder='Search for Quizzes'
+            placeholder='Search for Quiz'
             value={searchInput}
             onChange={handleSearchChange}
           />
@@ -210,9 +210,14 @@ export default function QuizList() {
         <li className='list-group-item'>
           <h3 id='wd-quizzes-title' className='bg-light p-3 ps-2'>
             <BsGripVertical className='me-2 fs-3' />
-            Quizzes <FaRegSmileWink className='ms-2' />
+            Quizzes
+            {/* <FaRegSmileWink className='ms-2' /> */}
             <div className='d-flex float-end'>
-              <button className='percentage-badge border-gray float-end'>
+              <button className='percentage-badge border-gray float-end' style={{
+                borderRadius
+                  :
+                  '12px'
+              }}>
                 20% of Total
               </button>
             </div>
@@ -248,7 +253,6 @@ export default function QuizList() {
                 userRole === 'STUDENT' &&
                 (currentDate < availableFrom || currentDate > untilDate);
 
-              // Fetch quiz details if not already fetched
               if (!quizDetailsMap[quiz._id]) {
                 fetchQuizDetails(quiz._id);
               }
@@ -330,9 +334,8 @@ export default function QuizList() {
                             </button>
                             <button
                               id='wd-publish-btn'
-                              className={`dropdown-item ${
-                                quiz.published ? 'text-success' : 'text-danger'
-                              }`}
+                              className={`dropdown-item ${quiz.published ? 'text-success' : 'text-danger'
+                                }`}
                               onClick={() => {
                                 handlePublishToggle(quiz);
                                 setShowPopup({});
