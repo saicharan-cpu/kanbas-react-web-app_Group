@@ -29,7 +29,9 @@ export default function QuizDetailsEditor () {
     availableDate: '',
     untilDate: '',
     points: '',
-    attempts: 1 // Default number of attempts
+    attempts: 1, // Default number of attempts
+    published: false // Default published state
+
   })
 
   const { currentUser } = useSelector((state: any) => state.accountReducer)
@@ -70,7 +72,9 @@ export default function QuizDetailsEditor () {
           availableDate: formatDateForInput(quiz.availableDate),
           untilDate: formatDateForInput(quiz.untilDate),
           points: quiz.points || '',
-          attempts: quiz.attempts || 1 // Fetch number of attempts
+          attempts: quiz.attempts || 1,  // Fetch number of attempts
+          published: quiz.published || false // Fetch published state
+
         })
       } catch (error) {
         console.error('Error fetching quizzes:', error)
@@ -107,19 +111,19 @@ export default function QuizDetailsEditor () {
     })
   }
 
-  const handleSave = async () => {
+
+  const handleSave = async (publish: boolean = false) => {
     try {
+      const quizData = { ...quizDetails, published: publish }
+
       if (qid && qid !== 'New') {
-        await client.updateQuiz({ ...quizDetails, _id: qid })
-        navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`)
+        await client.updateQuiz({ ...quizData, _id: qid })
+        navigate(`/Kanbas/Courses/${cid}/Quizzes`)
       } else {
         console.log('Creating a new quiz')
-        const newQuiz = await client.createQuizzes(
-          cid as string,
-          quizDetails as any
-        )
+        const newQuiz = await client.createQuizzes(cid as string, quizData as any)
         dispatch(addQuizzes(newQuiz))
-        navigate(`/Kanbas/Courses/${cid}/Quizzes/${newQuiz._id}`)
+        navigate(`/Kanbas/Courses/${cid}/Quizzes`)
       }
     } catch (error) {
       console.error('Error saving quiz:', error)
@@ -139,7 +143,7 @@ export default function QuizDetailsEditor () {
             </span>
             <span className='quiz-published d-flex align-items-center'>
               <MdDoNotDisturbAlt className='me-2' />
-              Not Published
+              {quizDetails.published ? 'Published' : 'Not Published'}
             </span>
           </div>
         </div>
@@ -429,10 +433,18 @@ export default function QuizDetailsEditor () {
             <button
               type='button'
               className='btn btn-danger'
-              onClick={handleSave}
+              onClick={() => handleSave(false)} // Save without publishing
             >
               Save
             </button>
+            <button
+              type='button'
+              className='btn btn-success'
+              onClick={() => handleSave(true)} // Save and publish
+            >
+              Save and Publish
+            </button>
+            
           </div>
         </form>
       </div>
