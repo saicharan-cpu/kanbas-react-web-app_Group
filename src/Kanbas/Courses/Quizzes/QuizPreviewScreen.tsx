@@ -453,7 +453,7 @@ export default function QuizPreview() {
               {(quizInfo?.multipleAttempts
                   ? submissionCount < quizInfo.attempts
                   : submissionCount < 1) && timeRemaining > 0 ? (
-                <button onClick={handleSubmission} className='btn btn-primary'>
+                <button className='btn btn-primary justify-content-right' onClick={handleSubmission} >
                   Submit Quiz
                 </button>
               ) : (

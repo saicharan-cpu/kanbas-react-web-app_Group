@@ -28,6 +28,6 @@ const quizzesSlicer = createSlice({
   },
 });
 
-export const { addQuizzes, deleteQuizzes, updateQuizzes, setQuizzes } =
+export const { addQuizzes, setQuizzes, deleteQuizzes, updateQuizzes } =
   quizzesSlicer.actions;
 export default quizzesSlicer.reducer;
