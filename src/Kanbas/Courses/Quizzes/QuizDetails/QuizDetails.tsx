@@ -41,10 +41,10 @@ export default function QuizDetails () {
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [totalPoints, setTotalPoints] = useState<number | null>(null) // State to store total points
-  const [showAccessCodeForm, setShowAccessCodeForm] = useState(false) // State to control form visibility
-  const [enteredCode, setEnteredCode] = useState('') // State to store the entered access code
-  const [accessCodeError, setAccessCodeError] = useState<string | null>(null) // State to store access code error message
+  const [totalPoints, setTotalPoints] = useState<number | null>(null)
+  const [showAccessCodeForm, setShowAccessCodeForm] = useState(false)
+  const [enteredCode, setEnteredCode] = useState('')
+  const [accessCodeError, setAccessCodeError] = useState<string | null>(null)
   const [incorrectQuestions, setIncorrectQuestions] = useState<string[]>([]);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [quizDetails, setQuizDetails] = useState<Quiz | null>(null);

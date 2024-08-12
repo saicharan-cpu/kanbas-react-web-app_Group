@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react'
 import FillInTheBlanksEditor from './FillInTheBlanksEditor'
 import MCEditor from './MCEditor'
 import TFEditor from './TFEditor'
-import * as client from '../../QuestionClient' // Adjust the import as necessary
+import * as client from '../../QuestionClient'
 import { useParams } from 'react-router'
 import { FaTrash } from 'react-icons/fa6'
-import * as quizClient from '../../client' // Assuming you have a client to handle quiz operations
+import * as quizClient from '../../client'
 
 interface Question {
   title: string
