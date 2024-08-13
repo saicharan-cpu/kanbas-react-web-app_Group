@@ -10,6 +10,17 @@ import { AiOutlineStop } from 'react-icons/ai'
 import { FaPlus, FaArrowLeft } from 'react-icons/fa6'
 import { findAllQuestionsByQuizId } from '../QuestionClient'
 import * as quizClient from '../client';
+import { addAnswer, updateAnswer } from '../AnswerReducer';
+
+interface Question {
+  title: string;
+  _id: string;
+  text: string;
+  points: number;
+  type: 'multiple-choice' | 'fill-in-the-blank' | 'true-false';
+  options?: string[];
+  answers: string[];
+}
 
 interface Answers {
   [key: string]: string;
@@ -21,7 +32,7 @@ interface Quiz {
   attempts: number;
   timeLimit: number;
   userAttempts: string[];
-  accessCode?: string; 
+  accessCode?: string; // Make accessCode optional
 }
 
 export default function QuizDetails () {
@@ -30,10 +41,10 @@ export default function QuizDetails () {
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [totalPoints, setTotalPoints] = useState<number | null>(null)
-  const [showAccessCodeForm, setShowAccessCodeForm] = useState(false)
-  const [enteredCode, setEnteredCode] = useState('')
-  const [accessCodeError, setAccessCodeError] = useState<string | null>(null)
+  const [totalPoints, setTotalPoints] = useState<number | null>(null) // State to store total points
+  const [showAccessCodeForm, setShowAccessCodeForm] = useState(false) // State to control form visibility
+  const [enteredCode, setEnteredCode] = useState('') // State to store the entered access code
+  const [accessCodeError, setAccessCodeError] = useState<string | null>(null) // State to store access code error message
   const [incorrectQuestions, setIncorrectQuestions] = useState<string[]>([]);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [quizDetails, setQuizDetails] = useState<Quiz | null>(null);
@@ -57,6 +68,7 @@ export default function QuizDetails () {
     try {
       if (qid !== 'New') {
         const quiz = await client.findQuiz(cid as string, qid as string)
+        console.log('Fetched quiz:', quiz) // Debug log
         dispatch(setQuizzes([quiz]))
         const questions = await findAllQuestionsByQuizId(qid as string)
         const points = questions.reduce(
@@ -138,9 +150,13 @@ export default function QuizDetails () {
       return dateString
     }
   }
- const { currentUser } = useSelector((state: any) => state.accountReducer)
-   const handleTakeQuiz = () => {
-    if (quiz?.accessCode) {
+
+  console.log('Quiz from state:', quiz) // Debug log
+  const { currentUser } = useSelector((state: any) => state.accountReducer)
+  console.log('USER ' + currentUser.role)
+
+  const handleTakeQuiz = () => {
+    if (quiz?.accessCode) { // Show access code form only if accessCode is not empty
       setShowAccessCodeForm(true)
     } else {
       navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}/questions`)
@@ -271,6 +287,8 @@ export default function QuizDetails () {
               className={`btn btn-lg me-1 ${
                 quiz.published ? 'btn-success' : 'btn-danger'
               }`}
+              onClick={togglePublish}
+
             >
               {quiz.published ? <FaPlus /> : <AiOutlineStop />}
               {quiz.published ? ' Published' : ' Unpublished'}
@@ -290,13 +308,6 @@ export default function QuizDetails () {
               <MdOutlineModeEditOutline />
               Edit
             </Link>
-            <button
-              className='btn btn-success ms-2'
-              onClick={togglePublish}
-              disabled={!quiz.title}
-            >
-              {quiz.published ? 'Unpublish' : 'Save and Publish'}
-            </button>
           </>
         )}
       </div>
@@ -314,6 +325,7 @@ export default function QuizDetails () {
               <tr>
                 <th>Points</th>
                 <td>{totalPoints !== null ? totalPoints : quiz.points}</td>{' '}
+                {/* Display total points */}
               </tr>
               <tr>
                 <th>Assignment Group</th>
