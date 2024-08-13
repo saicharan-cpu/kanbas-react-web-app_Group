@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MCQEditor from './MCQEditor';
 import FIBEditor from './FIBEditor';
@@ -171,7 +170,7 @@ export default function QuizQuestionEditor() {
               </select>
             </div>
 
-            <div className=' align-items-center d-flex'>
+            <div className=' d-flex'>
               <label htmlFor='points' className='form-label me-2 mb-0 '>
                 <h6>pts:</h6>  </label>
 

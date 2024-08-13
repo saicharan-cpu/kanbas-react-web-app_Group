@@ -8,8 +8,11 @@ import { format } from 'date-fns';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AiOutlineStop } from 'react-icons/ai';
 import { BsGripVertical } from 'react-icons/bs';
-import { FaCheckCircle, FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
-import { IoEllipsisVertical, IoRocket } from 'react-icons/io5';
+import { FaCheckCircle, FaPlus } from 'react-icons/fa';
+import { FaEllipsisVertical } from "react-icons/fa6";
+import { BiSolidCheckCircle } from "react-icons/bi";
+import { IoTrashOutline } from "react-icons/io5";
+import { IoRocket } from 'react-icons/io5';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import * as questionClient from './QuestionClient';
 import * as answerClient from './AnswerClient';
@@ -62,7 +65,7 @@ export default function QuizList() {
       const quizzes = await client.findQuizzesForCourse(cid as string);
       dispatch(setQuizzes(quizzes));
     } catch (error) {
-      console.error('Error fetching quizzes:', error);
+      console.error('Error in fetching quizzes:', error);
     }
   }, [cid, dispatch]);
 
@@ -105,12 +108,8 @@ export default function QuizList() {
       setShowPopup({});
       fetchQuizzes(); 
     } catch (error) {
-      console.error('Error updating quiz:', error);
+      console.error('Error in updating quiz:', error);
     }
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(event.target.value);
   };
 
   const fetchUserAnswers = useCallback(
@@ -127,7 +126,7 @@ export default function QuizList() {
         );
         return answers;
       } catch (error) {
-        console.error('Error fetching user answers:', error);
+        console.error('Error in fetching user answers:', error);
         return [];
       }
     },
@@ -179,16 +178,6 @@ export default function QuizList() {
     <div id='wd-quiz-list' className='container'>
       <div className='d-flex justify-content-between align-items-center mb-3'>
         <div className='input-group w-50'>
-          <span className='input-group-text bg-white border-end-0'>
-            <FaSearch />
-          </span>
-          <input
-            id='wd-search-quizzes'
-            className='form-control border-start-0'
-            placeholder='Search for Quiz'
-            value={searchInput}
-            onChange={handleSearchChange}
-          />
         </div>
 
         {userRole === 'FACULTY' && (
@@ -201,17 +190,16 @@ export default function QuizList() {
               Quiz
             </Link>
             <button className='btn btn-secondary me-2'>
-              <IoEllipsisVertical className='fs-4' />
+              <FaEllipsisVertical  className='fs-5' />
             </button>
           </div>
         )}
       </div>
       <ul className='list-group p-0 mb-5 fs-5 border-gray'>
         <li className='list-group-item'>
-          <h3 id='wd-quizzes-title' className='bg-light p-3 ps-2'>
-            <BsGripVertical className='me-2 fs-3' />
+          <h3 id='wd-quizzes-title' className='bg-light p-4 ps-2'>
+            <BsGripVertical className='me-3' />
             Quizzes
-            {/* <FaRegSmileWink className='ms-2' /> */}
             <div className='d-flex float-end'>
               <button className='percentage-badge border-gray float-end' style={{
                 borderRadius
@@ -302,12 +290,12 @@ export default function QuizList() {
                       <div className='d-flex position-relative'>
                         <div className='d-flex'>
                           {quiz.published ? (
-                            <FaCheckCircle className='text-success me-2' />
+                            <BiSolidCheckCircle className='me-5 text-success' />
                           ) : (
-                            <AiOutlineStop className='text-danger me-2' />
+                            <AiOutlineStop className='text-danger me-3' />
                           )}
                         </div>
-                        <IoEllipsisVertical
+                        <FaEllipsisVertical 
                           className='fs-5'
                           onClick={() => togglePopup(quiz._id)}
                         />
@@ -327,11 +315,9 @@ export default function QuizList() {
                               onClick={() => {
                                 handleDeleteClick(quiz._id);
                                 setShowPopup({});
-                              }}
-                            >
-                              <FaTrash />
-                              Delete
-                            </button>
+                              }} >
+                              <IoTrashOutline />
+                              Delete</button>
                             <button
                               id='wd-publish-btn'
                               className={`dropdown-item ${quiz.published ? 'text-success' : 'text-danger'
@@ -386,7 +372,7 @@ export default function QuizList() {
               ></button>
             </div>
             <div className='modal-body'>
-              Are you sure you want to delete this quiz?
+              Are you sure you want to delete the quiz?
             </div>
             <div className='modal-footer'>
               <button

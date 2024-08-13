@@ -1,5 +1,22 @@
-.card-header {
+/* .card-header {
   gap: 10px; 
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+.w-auto {
+  width: auto;
+}
+
+.mb-2 {
+  margin-bottom: 1rem;
+} */
+
+
+.card-header {
+  gap: 15px;
 }
 
 .d-inline-block {
