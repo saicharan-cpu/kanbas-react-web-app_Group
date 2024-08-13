@@ -170,11 +170,11 @@ export default function QuizQuestionEditor() {
               </select>
             </div>
 
-            <div className=' d-flex'>
+            <div className=' d-flex align-items-center'>
               <label htmlFor='points' className='form-label me-2 mb-0 '>
                 <h6>pts:</h6>  </label>
 
-              <input className='form-control w-auto d-inline-block' id='question-points'
+              <input style={{ height: '40px'  }} className='form-control w-auto d-inline-block' id='question-points'
                 type='number' placeholder='0'
                 value={question.points}
                 onChange={e => {
