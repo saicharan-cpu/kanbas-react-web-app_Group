@@ -16,7 +16,7 @@ export default function Profile() {
   const signout = async () => {
     await client.signout();
     dispatch(setCurrentUser(null));
-    localStorage.removeItem('profile'); // Clear profile from local storage on sign out
+    localStorage.removeItem('profile');
     navigate("/Kanbas/Account/Signin");
   };
 
@@ -24,7 +24,7 @@ export default function Profile() {
     try {
       const account = await client.profile();
       setProfile(account);
-      localStorage.setItem('profile', JSON.stringify(account)); // Save profile to local storage
+      localStorage.setItem('profile', JSON.stringify(account));
       dispatch(setCurrentUser(account));
     } catch (err: any) {
       navigate('/Kanbas/Account/Signin');

@@ -108,6 +108,11 @@ export default function QuizDetailsEditor () {
   const handleSave = async (publish: boolean = false) => {
     try {
       const quizData = { ...quizDetails, published: publish }
+      if(!quizData.title)
+        {
+          alert("Title of the quiz cannot be empty!!!");
+          return;
+        }
       if (qid && qid !== 'New') {
         await client.updateQuiz({ ...quizData, _id: qid });
         navigate(`/Kanbas/Courses/${cid}/Quizzes`);

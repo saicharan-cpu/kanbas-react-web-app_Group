@@ -218,9 +218,9 @@ export default function QuizDetails () {
         className='text-nowrap align-self-center' >
         {currentUser.role === 'STUDENT' ? ( <>
             {userHasAttempted && (
-              <div className='alert alert-warning' role='alert'>
+              <div role='alert'>
                 {userHasAttempted && (
-                  <button className='btn btn-primary text-center me-2'
+                  <button className='btn btn-lg btn-primary text-center me-1'
                     onClick={handleViewResults} >
                     View Results </button>)}
               </div> )}
