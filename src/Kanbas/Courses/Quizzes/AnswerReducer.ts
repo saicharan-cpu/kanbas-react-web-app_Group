@@ -1,17 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Answer {
+interface Ans {
   userId: string;
   quizId: string;
   questionId: string;
   answer: string;
 }
 
-interface AnswersState {
-  answers: Answer[];
+interface AnsState {
+  answers: Ans[];
 }
 
-const initialState: AnswersState = {
+const initialState: AnsState = {
   answers: [],
 };
 
@@ -19,10 +19,10 @@ const answersReducer = createSlice({
   name: "answers",
   initialState,
   reducers: {
-    setAnswers: (state, action: PayloadAction<Answer[]>) => {
+    setAnswers: (state, action: PayloadAction<Ans[]>) => {
       state.answers = action.payload;
     },
-    addAnswer: (state, action: PayloadAction<Answer>) => {
+    addAnswer: (state, action: PayloadAction<Ans>) => {
       state.answers.push(action.payload);
     },
     updateAnswer: (

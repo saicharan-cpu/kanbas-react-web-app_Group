@@ -1,6 +1,5 @@
 
 import axios from "axios";
-
 const axiosWithCredentials = axios.create({ withCredentials: true });
 export const REMOTE_SERVER = process.env.REACT_APP_REMOTE_SERVER;
 const QUESTIONS_API = `${REMOTE_SERVER}/api/questions`;
@@ -34,7 +33,7 @@ export const fetchAnswer = async (userId: string, questionId: string) => {
   }
 };
 
-export const fetchAllAnswersForQuiz = async (userId: string, quizId: string) => {
+export const fetchAnswersForQuiz = async (userId: string, quizId: string) => {
   const response = await axios.get(`${ANSWERS_API}/${userId}/quiz/${quizId}`);
   return response.data;
 };

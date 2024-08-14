@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchQuestionsForQuiz, createQuestion, updateQuestion, deleteQuestion } from "./client";
 
-interface Question {
+interface Que {
   _id: string;
   title: string;
   points: number;
@@ -15,8 +15,8 @@ interface Question {
 
 const QuizQuestionsEditor = () => {
   const { quizId } = useParams<{ quizId: string }>();
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [newQuestion, setNewQuestion] = useState<Question>({
+  const [questions, setQuestions] = useState<Que[]>([]);
+  const [newQuestion, setNewQuestion] = useState<Que>({
     _id: "",
     title: "",
     points: 0,
@@ -53,8 +53,12 @@ const QuizQuestionsEditor = () => {
     setQuestions(questionsData);
   };
 
-  const handleEditQuestion = (question: Question) => {
+  const handleEditQuestion = (question: Que) => {
     setNewQuestion(question);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setNewQuestion({ ...newQuestion, [e.target.name]: e.target.value } as Que);
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
@@ -63,23 +67,19 @@ const QuizQuestionsEditor = () => {
     setQuestions(questionsData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setNewQuestion({ ...newQuestion, [e.target.name]: e.target.value } as Question);
-  };
-
-  const handleChoiceChange = (index: number, field: string, value: string | boolean) => {
-    const updatedChoices = newQuestion.choices!.map((choice, i) =>
-      i === index ? { ...choice, [field]: value } : choice
-    );
-    setNewQuestion({ ...newQuestion, choices: updatedChoices });
-  };
-
   const handleAddChoice = () => {
     setNewQuestion({ ...newQuestion, choices: [...newQuestion.choices!, { text: "", isCorrect: false }] });
   };
 
   const handleRemoveChoice = (index: number) => {
     const updatedChoices = newQuestion.choices!.filter((_, i) => i !== index);
+    setNewQuestion({ ...newQuestion, choices: updatedChoices });
+  };
+
+  const handleChoiceChange = (index: number, field: string, value: string | boolean) => {
+    const updatedChoices = newQuestion.choices!.map((choice, i) =>
+      i === index ? { ...choice, [field]: value } : choice
+    );
     setNewQuestion({ ...newQuestion, choices: updatedChoices });
   };
 
@@ -95,8 +95,7 @@ const QuizQuestionsEditor = () => {
             <p>{question.questionVal}</p>
             <button onClick={() => handleEditQuestion(question)}>Edit</button>
             <button onClick={() => handleDeleteQuestion(question._id)}>Delete</button>
-          </div>
-        ))}
+          </div> ))}
       </div>
       <div>
         <h2>Edit Question</h2>
@@ -104,14 +103,17 @@ const QuizQuestionsEditor = () => {
           Title:
           <input type="text" name="title" value={newQuestion.title} onChange={handleChange} />
         </label>
+
         <label>
           Points:
           <input type="number" name="points" value={newQuestion.points} onChange={handleChange} />
         </label>
+
         <label>
           Question:
           <textarea name="questionVal" value={newQuestion.questionVal} onChange={handleChange} />
         </label>
+
         <label>
           Question Type:
           <select name="questionType" value={newQuestion.questionType} onChange={handleChange}>
@@ -120,6 +122,7 @@ const QuizQuestionsEditor = () => {
             <option value="Fill in the Blanks">Fill in the Blanks</option>
           </select>
         </label>
+        
         {newQuestion.questionType === "Multiple Choice" && (
           <div>
             <h3>Choices</h3>
@@ -127,27 +130,24 @@ const QuizQuestionsEditor = () => {
               <div key={index}>
                 <label>
                   Text:
-                  <input
-                    type="text"
-                    value={choice.text}
-                    onChange={(e) => handleChoiceChange(index, "text", e.target.value)}
-                  />
+                  <input type="text" value={choice.text}
+                    onChange={(e) => handleChoiceChange(index, "text", e.target.value)} />
                 </label>
+
                 <label>
                   Correct:
-                  <input
-                    type="checkbox"
-                    checked={choice.isCorrect}
-                    onChange={(e) => handleChoiceChange(index, "isCorrect", e.target.checked)}
-                  />
+                  <input type="checkbox" checked={choice.isCorrect}
+                    onChange={(e) => handleChoiceChange(index, "isCorrect", e.target.checked)} />
                 </label>
-                <button onClick={() => handleRemoveChoice(index)}>Remove</button>
-              </div>
-            ))}
-            <button onClick={handleAddChoice}>Add Choice</button>
+                <button onClick={() => handleRemoveChoice(index)}>
+                  Remove</button>
+              </div> ))}
+            <button onClick={handleAddChoice}>
+              Add Choice</button>
           </div>
         )}
-        <button onClick={handleSaveQuestion}>Save Question</button>
+        <button onClick={handleSaveQuestion}>
+          Save Question</button>
         <button onClick={() => setNewQuestion({
           _id: "",
           title: "",
@@ -155,10 +155,9 @@ const QuizQuestionsEditor = () => {
           questionVal: "",
           questionType: "Multiple Choice",
           choices: [{ text: "", isCorrect: false }],
-        })}>Cancel</button>
+        })}>
+          Cancel</button>
       </div>
-    </div>
-  );
-}
+    </div>);}
 
 export default QuizQuestionsEditor;

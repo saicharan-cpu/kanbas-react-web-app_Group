@@ -1,41 +1,36 @@
-import React, { useState } from 'react'
-import QuizDetailsEditor from './QuizDetailsEditor'
-import QuizQuestionEditor from './QuestionsEditor'
+import React, { useState } from 'react';
+import QuizDetailsEditor from './QuizDetailsEditor';
+import QuizQuestionEditor from './QuestionsEditor';
 
-export default function QuizEditor () {
-  const [activeTab, setActiveTab] = useState('details')
-return (
+export default function QuizEditor() {
+  const [activeTab, setActiveTab] = useState('details');
+  return (
     <div>
       <ul className='nav nav-tabs'>
         <li className='nav-item'>
           <button
             className={`nav-link ${activeTab === 'details' ? 'active' : ''}`}
-            onClick={() => setActiveTab('details')}
-          >
+            onClick={() => setActiveTab('details')} >
             Details
           </button>
         </li>
         <li className='nav-item'>
           <button
             className={`nav-link ${activeTab === 'questions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('questions')}
-          >
+            onClick={() => setActiveTab('questions')} >
             Questions
           </button>
         </li>
       </ul>
- <div className='tab-content'>
+      <div className='tab-content'>
         {activeTab === 'details' && (
           <div className='tab-pane active'>
             <QuizDetailsEditor />
-          </div>
-        )}
+          </div> )}
+          
         {activeTab === 'questions' && (
           <div className='tab-pane active'>
             <QuizQuestionEditor />
-          </div>
-        )}
+          </div> )}
       </div>
-    </div>
-  )
-}
+    </div> )}

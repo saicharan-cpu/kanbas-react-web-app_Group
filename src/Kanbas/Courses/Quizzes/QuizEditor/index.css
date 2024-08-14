@@ -2,14 +2,17 @@
   gap: 15px;
 }
 
-.d-inline-block {
-  display: inline-block;
+.mb-2 {
+  margin-bottom: 1rem;
 }
 
 .w-auto {
   width: auto;
 }
 
-.mb-2 {
-  margin-bottom: 1rem;
+.d-inline-block {
+  display: inline-block;
 }
+
+
+

@@ -19,21 +19,6 @@ h2 {
   font-size: 20px;
   margin-bottom: 15px;
 }
-/*  
-.question-card {
-  border: 1px solid #ddd;
-  padding: 15px;
-  margin-bottom: 20px;
-  background-color: #fff;
-} */
- 
-/* .question-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-  */
 .options {
   margin: 10px 0;
 }
@@ -43,14 +28,6 @@ h2 {
   margin-bottom: 5px;
 }
  
-/* .next-button {
-  background-color: #007bff;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-} */
  
 .next-button:hover {
   background-color: #0056b3;
@@ -62,14 +39,6 @@ h2 {
   align-items: center;
   margin-top: 20px;
 }
-/*  
-.submit-quiz, .edit-quiz {
-  background-color: #007bff;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-} */
  
 .edit-quiz {
   background-color: #6c757d;
