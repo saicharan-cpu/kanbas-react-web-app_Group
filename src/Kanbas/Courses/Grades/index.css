@@ -1,0 +1,43 @@
+.input-cell {
+    display: flex;
+    align-items: center;
+    border: 2px solid red;
+    padding: 1px;
+    border-radius: 10px;
+    width: 100px;
+    height: 35px;
+}
+
+.input-edit {
+    flex-grow: 1;
+    padding: 5px 8px;
+    border: 1px solid rgb(197, 187, 187);
+    border-radius: 10px;
+    outline: none;
+    width: 80px;
+    height: 30px;
+    align-items: center;
+    text-align: center;
+}
+
+.input-icon-container {
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgb(220, 210, 210);
+    border-radius: 5px;
+    margin-left: 4px;
+    width: auto;
+}
+
+.input-icon {
+    color: black;
+    cursor: pointer;
+}
+
+.small-height {
+    height: 10px;
+    padding: 0px;
+    width: 170px;
+}

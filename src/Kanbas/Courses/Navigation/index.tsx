@@ -1,16 +1,24 @@
-import { Link } from "react-router-dom";
+import React from 'react';
+import { NavLink, useParams, useLocation } from 'react-router-dom';
+import { FaAlignJustify } from 'react-icons/fa';
+import "./index.css";
+
+const links = ["Home", "Modules", "Piazza", "Zoom", "Assignments", "Quizzes", "Grades","People"];
 
 export default function CoursesNavigation() {
-    console.log('called course navigation');
+    const { cid } = useParams();
+
     return (
-        <ul id="wd-courses-navigation">
-            <li><Link id="wd-course-home-link"    to="Home">Home</Link></li>
-            <li><Link id="wd-course-modules-link" to="Modules">Modules</Link></li>
-            <li><Link id="wd-course-piazza-link"  to="Piazza">Piazza</Link></li>
-            <li><Link id="wd-course-zoom-link"    to="Zoom">Zoom</Link></li>
-            <li><Link id="wd-course-assignments-link" to="Assignments">Assignments</Link></li>
-            <li><Link id="wd-course-quizzes-link" to="Quizzes">Quizzes</Link></li>
-            <li><Link id="wd-course-grades-link"  to="Grades">Grades</Link></li>
-        </ul>
+        <div id="wd-courses-navigation" className="list-group fs-5 rounded-0">
+            {links.map((link) => (
+                <NavLink
+                    key={link}
+                    id={`wd-course-${link.toLowerCase()}-link`}
+                    to={`/Kanbas/Courses/${cid}/${link}`}
+                    className={({ isActive }) => `list-group-item border border-0 ${isActive ? 'active' : 'text-danger'}`}>
+                    {link}
+                </NavLink>
+            ))}
+        </div>
     );
 }

@@ -1,40 +1,126 @@
+import React, { useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FaPlus, FaSearch } from 'react-icons/fa';
+import { BsGripVertical, BsPlus, BsTrash } from 'react-icons/bs';
+import { PiNotePencilFill } from "react-icons/pi";
+import { BiSolidDownArrow } from "react-icons/bi";
+import { IoEllipsisVertical } from 'react-icons/io5';
+import LessonControlButtons from '../Modules/LessonControlButtons';
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteAssignment, setAssignment } from './reducer';
+import * as assignmentsClient from './client';
+import './index.css';
+
 export default function Assignments() {
-    return (
-      <div id="wd-assignments">
-        <input id="wd-search-assignment"
-               placeholder="Search for Assignments" />
-        <button id="wd-add-assignment-group">+ Group</button>
-        <button id="wd-add-assignment">+ Assignment</button>
-        <h3 id="wd-assignments-title">
-          ASSIGNMENTS 40% of Total <button>+</button>
-        </h3>
-        <ul id="wd-assignment-list">
-        <li className="wd-assignment-list-item">
-            <a className="wd-assignment-link"
-              href="#/Kanbas/Courses/1234/Assignments/123">
-              A1 - ENV + HTML
-              </a>
-              <br/>
-              Multiple Modules | <b> Not Available until</b> May 6 at 12 am | <b>Due</b> May 13 at 11.59 pm | 100 pts.
-        </li>
-        <br/>
-        <li className="wd-assignment-list-item">
-        <a className="wd-assignment-link"
-              href="#/Kanbas/Courses/1234/Assignments/123">
-              A2 - CSS + BootStrap
-              </a>
-              <br/>
-              Multiple Modules | <b> Not Available until</b> May 13 at 12 am | <b>Due</b> May 20 at 11.59 pm | 100 pts.
-        </li>
-        <br/>
-        <li className="wd-assignment-list-item">
-        <a className="wd-assignment-link"
-              href="#/Kanbas/Courses/1234/Assignments/123">
-              A2 - JavaScript + React
-              </a>
-              <br/>
-              Multiple Modules | <b> Not Available until</b> May 20 at 12 am | <b>Due</b> May 27 at 11.59 pm | 100 pts.
-        </li>
-      </ul>
+  const { cid } = useParams<{ cid: string }>();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const assignments = useSelector((state: any) => state.assignmentsReducer.assignments);
+  const currentUser = useSelector((state: any) => state.accountReducer.currentUser);
+  const userRole = currentUser?.role;
+  const courseAssignments = assignments.filter((assignment: any) => assignment.course === cid);
+  
+  const fetchAssignments = async () => {
+    const assignments = await assignmentsClient.fetchAssignmentForCourse(cid as string);
+    dispatch(setAssignment(assignments));
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [dispatch]);
+
+  const handleDelete = async (assignmentId: string) => {
+    if (window.confirm('Are you sure you want to delete this assignment?')) {
+      await assignmentsClient.deleteAssignment(assignmentId);
+      dispatch(deleteAssignment(assignmentId));
+    }
+  };
+
+  return (
+    <div id="wd-assignments" className="container mt-4">
+      <div className="row mb-3 align-items-center">
+        <div className="col-md-6 mb-2 mb-md-0">
+          <div className="input-group">
+            <span className="input-group-text bg-white border-end-0"><FaSearch /></span>
+            <input
+              id="wd-search-assignment"
+              type="text"
+              className="form-control border-start-0"
+              placeholder="Search for Assignments"
+            />
+          </div>
+        </div>
+        {userRole === 'FACULTY' && (
+          <div className="col-md-6 text-md-end">
+            <button id="wd-add-assignment-group" className="btn btn-outline-secondary me-2">
+              <FaPlus className="me-1" /> Group
+            </button>
+            <button
+              id="wd-add-assignment"
+              className="btn btn-danger"
+              onClick={() => navigate(`/Kanbas/Courses/${cid}/Assignments/new`)}
+            >
+              <FaPlus className="me-1" /> Assignment
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="assignment-section">
+        <div className="assignment-title d-flex align-items-center p-3 bg-light">
+          <div>
+            <BsGripVertical className="me-2 fs-3" />
+            <BiSolidDownArrow />
+          </div>
+          <div className="flex-grow-1">
+            <b>ASSIGNMENTS</b>
+          </div>
+          <div className="d-flex align-items-center">
+            <span className="badge bg-secondary ms-2">40% of Total</span>
+          </div>
+          {userRole === 'FACULTY' && (
+            <div>
+              <BsPlus className="fs-4" />
+              <IoEllipsisVertical className="fs-4" />
+            </div>
+          )}
+        </div>
+        <ul id="wd-assignment-list" className="list-unstyled">
+          {courseAssignments.map((assignment: any) => (
+            <li key={assignment._id} className="wd-assignment-list-item d-flex align-items-center">
+              <div><BsGripVertical className="me-2 fs-3" /></div>
+              <div className="assignment-icon me-2">
+                <PiNotePencilFill />
+              </div>
+              <div className="assignment-details flex-grow-1">
+                {userRole === 'FACULTY' ? (
+                  <Link
+                    to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`}
+                    className="wd-assignment-link d-block mb-1"
+                    style={{ color: 'black', textDecoration: 'none' }}
+                  >
+                    <b>{assignment.title}</b>
+                  </Link>
+                ) : (
+                  <span className="wd-assignment-link d-block mb-1" style={{ color: 'black', textDecoration: 'none' }}>
+                    <b>{assignment.title}</b>
+                  </span>
+                )}
+                <span className="details">
+                  <span style={{ color: 'red' }}>Multiple Modules</span> | <b>Not Available until</b> {assignment.notAvailableUntil} | <b>Due</b> {assignment.dueDate} | 100 pts.
+                </span>
+              </div>
+              {userRole === 'FACULTY' && (
+                <div className="d-flex align-items-center">
+                  <LessonControlButtons />
+                  <button className="btn btn-link text-danger" onClick={() => handleDelete(assignment._id)}>
+                    <BsTrash />
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
-);}
+  );
+}
