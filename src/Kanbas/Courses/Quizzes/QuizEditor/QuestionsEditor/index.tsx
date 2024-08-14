@@ -92,6 +92,9 @@ export default function QuizQuestionEditor() {
   }
 
   const handleSaveChanges = async () => {
+    const fetchedQuestion = await client.findAllQuestionsByQuizId(
+      qid as string);
+    setQuestions(fetchedQuestion);
     try {
       for (const question of questions) {
         if (question._id) {
@@ -100,6 +103,10 @@ export default function QuizQuestionEditor() {
           await client.createQuestion(qid as string, question)
         }
       }
+
+      const fetchedQuestion = await client.findAllQuestionsByQuizId(
+        qid as string);
+      setQuestions(fetchedQuestion);
 
       const totalPoints = questions.reduce(
         (acc, question) => acc + question.points, 0)

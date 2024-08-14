@@ -34,7 +34,8 @@ export default function Profile() {
   const saveProfile = async () => {
     try {
       await client.updateProfile(profile._id, profile);
-      localStorage.setItem('profile', JSON.stringify(profile)); // Update profile in local storage
+      fetchProfile();
+      localStorage.setItem('profile', JSON.stringify(profile));
       alert('Profile saved successfully');
     } catch (err: any) {
       console.error('Error saving profile:', err);
@@ -54,7 +55,7 @@ export default function Profile() {
     const { name, value } = e.target;
     const updatedProfile = { ...profile, [name]: value };
     setProfile(updatedProfile);
-    localStorage.setItem('profile', JSON.stringify(updatedProfile)); // Save updated profile to local storage
+    localStorage.setItem('profile', JSON.stringify(updatedProfile));
   };
 
   return (
@@ -68,7 +69,7 @@ export default function Profile() {
             value={profile.username || ""}
             onChange={handleChange}
             placeholder="Username"
-            disabled // Assuming username shouldn't be editable
+            disabled
           />
           <input
             className="wd-password form-control mb-2"
@@ -77,7 +78,7 @@ export default function Profile() {
             value={profile.password || ""}
             onChange={handleChange}
             placeholder="Password"
-            disabled // Assuming password isn't handled here
+            disabled
           />
           <input
             className="wd-firstname form-control mb-2"
